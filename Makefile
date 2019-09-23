@@ -15,7 +15,7 @@ default: all
 
 all: $(TARGETS) penn-sh
 
-penn-sh: strutil.o ioutil.o penn-sh.c
+penn-sh: strutil.o ioutil.o linkedlist.o penn-sh.c
 	$(CC) $(CFLAGS) $^ -o $@
 
 strutil.o:
@@ -23,6 +23,9 @@ strutil.o:
 
 ioutil.o:
 	$(CC) $(OFLAGS) -c ioutil.c
+
+linkedlist.o:
+	$(CC) $(OFLAGS) -c linkedlist.c
 
 clean:
 	$(RM) *.o

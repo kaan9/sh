@@ -1,7 +1,7 @@
 /* strutil.h  --- Utility functions for string manipulation  ---  Kaan B Erdogmus, CIS 380, kaanberk*/
 
-#ifndef STRUTIL
-#define STRUTIL
+#ifndef STRUTIL_H
+#define STRUTIL_H
 
 #undef streq
 #undef isspace

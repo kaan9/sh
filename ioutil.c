@@ -105,13 +105,22 @@ int tokenize_input(char * buf, char ** argv) {
 }
 
 /* [r]edirect, [p]ipeline, [b]ackground check
- * returns 1 if c is "<", 2 if ">", 3 if "|", 4 if "&", 0 otherwise
+ * returns 1 if s is "<", 2 if ">", 3 if "|", 4 if "&", 0 otherwise
  */
-int is_rpb(char * c) {
-    if(streq(c, "<") return 1;
-    if(streq(c, ">") return 2;
-    if(streq(c, "|") return 3;
-    if(streq(c, "&") return 4;
+int is_rpb(const char * s) {
+    if(streq(s, "<")) return 1;
+    if(streq(s, ">")) return 2;
+    if(streq(s, "|")) return 3;
+    if(streq(s, "&")) return 4;
+    return 0;
+}
+
+/* checks if process has "&" in its arguments, modifies p->type
+ * and alters args by changing "&" to NULL pointer 
+ * if there are arguments after &, error
+ * returns 0 if 
+ */
+int parse_backg_proc(struct proc * p) {
     return 0;
 }
 
@@ -119,25 +128,24 @@ int parse_tokens(int tokc, char ** tokens, struct proc * procs) {
     if(is_rpb(tokens[0])) return 0;
     int procc = 0;
 
-
     //iterate over all tokens and separate them into processes, delimited by '|'
+    //change '|' to NULL when encountered so args is NULL-terminated
     for (int i = 0; i < tokc && procc < PROCMAX; i++, procc++) {
+        if (is_rpb(tokens[i])) return 0; //if the character after a '|' is an rbp, invalid syntax
         procs[procc].args = tokens + i;
         while (streq(tokens[i], "|")  && i < tokc) i++;
-        if (streq(tokens[i], "|") tokens[i] = NULL;
-        
+        if (streq(tokens[i], "|")) tokens[i] = NULL;
     } 
 
-    char **  token_p = tokens;
+    //iterate over all processes and extract the '<', '>' arguments
+    //replace '<' and '>' with NULL when encountered so args is NULL-terminated
+    //and  only refers to the process call and arguments and not to redirections
+    for (int p = 0; p < procc; p++) {
+        parse_backg_proc(procs + p);
 
-    while (token_p - tokens < tokc && procc < PROCMAX) {
-        procs[procc++].args = token_p
-        while (is_rbp(tokens[token_p] != 3 && topen_p < tokc + tokens) tokens
     }
-    
-    proces[0].args = tokens;
-    while(!rpbcheck(
-    return 1;
+
+    return procc;
 }
 
 

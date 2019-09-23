@@ -1,6 +1,6 @@
 /* ioutil.h   --- Utility functions for I/O --- Kaan B Erdogmus, CIS 380, kaanberk*/
-#ifndef IOUTIL
-#define IOUTIL
+#ifndef IOUTIL_H
+#define IOUTIL_H
 
 #define ARGC 2   //expected maximum value of argc
 #define RDLEN 1024  //length of input to be read (including terminating character which becomes '\0')

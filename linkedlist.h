@@ -3,6 +3,9 @@
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 /* a deque is a struct that has pointers to the head, tail of the linked list and a pointer
  * to a deallocator function that is called on all void * vals when the list is deleted
  * the deallocator can be NULL in which case no automatic deletion happens
@@ -29,7 +32,7 @@ typedef struct {
 } deque;
 
 /* make a new deque struct with one node containing the value NULL and an optional deleter function for deallocation */
-deque * make_list(void * val, int (*dealloc)(void *) deleter);
+deque * make_list(void * val, int (*deleter)(void *));
 
 /* delete the deque by first calling the deallocate function in the deque on the values, then free the nodes and the deque */
 int delete_list(deque * d);

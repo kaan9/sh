@@ -1,19 +1,8 @@
 /* linkedlist.c  --- linkedlist.h implementation ---  Kaan B Erdogmus, Belinda Liu CIS 380, kaanberk*/
 
-struct node {
-    void * val;
-    struct node * prev;
-    struct node * next;
-};
+#include "linkedlist.h"
 
-typedef struct {
-    struct node * head;
-    struct node * tail;
-    int (*dealloc)(void *);
-} deque;
-
-
-deque * make_list(void * val, int (*dealloc)(void *) deleter) {
+deque * make_list(void * val, int (*deleter)(void *)) {
     if (!val) return NULL; //NULL values not allowed in deque
     deque * d = malloc(sizeof(deque));
     if (!d) return NULL; //if malloc fails, return NULL
@@ -29,7 +18,7 @@ int delete_list(deque * d) {
     if (!d) return -1;
     int success = 0;
     struct node * curr = d->head;
-    while (node) {
+    while (curr) {
         if (d->dealloc) success += d->dealloc(curr->val);
         struct node * tmp = curr->next;
 	free(curr);
@@ -48,7 +37,7 @@ void * list_back(deque * d) {
 
 deque * push_back(deque * d, void * val) {
     if (!val || !d) return d; //null values not allowed in deque
-    struct node * tmp = malloc(struct node);
+    struct node * tmp = malloc(sizeof(struct node));
     tmp->val = val;
     tmp->prev = d->tail;
     d->tail = d->tail->next = tmp;
@@ -57,7 +46,7 @@ deque * push_back(deque * d, void * val) {
 
 deque * push_front(deque * d, void * val) {
     if (!val || !d) return d; //null values not allowed in deque
-    struct node * tmp = malloc(struct node);
+    struct node * tmp = malloc(sizeof(struct node));
     tmp->val = val;
     tmp->next = d->head;
     d->head = d->head->prev = tmp;
@@ -79,7 +68,7 @@ void * pop_back(deque * d) {
 void * pop_front(deque * d) {
     if (!d) return NULL; //invalid input
     struct node * tmp = d->head;
-    d->head = t->head->next;
+    d->head = d->head->next;
     void * val = tmp->val;
     free(tmp);
 
