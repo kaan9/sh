@@ -1,34 +1,23 @@
 CC = clang
-
 CFLAGS = -Wall
-
 OFLAGS = -Wall -c
-
-TARGETS = clobber penn-sh
+SRCS = strutil.c ioutil.c tokenizer.c penn-sh.c
+OBJS = strutil.o ioutil.o tokenizer.o penn-sh.o
+TARGETS = clean penn-sh
+LIBS = 
 
 .PHONY: penn-sh
 
 
-
-
 default: all
 
-all: $(TARGETS) penn-sh
+all: $(TARGETS)
 
-penn-sh: strutil.o ioutil.o linkedlist.o penn-sh.c
-	$(CC) $(CFLAGS) $^ -o $@
+penn-sh: $(OBJS) 
+	$(CC) $(CFLAGS) $(LIBS) -o $@ $(OBJS)
 
-strutil.o:
-	$(CC) $(OFLAGS) strutil.c
-
-ioutil.o:
-	$(CC) $(OFLAGS) -c ioutil.c
-
-linkedlist.o:
-	$(CC) $(OFLAGS) -c linkedlist.c
+$(SRCS):
+	$(CC) $(OFLAGS) $*.c
 
 clean:
-	$(RM) *.o
-
-clobber: clean
-	$(RM) penn-sh
+	$(RM) *.o penn-sh
