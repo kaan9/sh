@@ -36,7 +36,6 @@ int main(int argc, const char ** argv) {
         if (!tokc) continue; // if no lines entered, skip execution
         
         procc = parse_tokens(tokc, tokens, procs);
-        procs[procc] = 0;	
         if (!procc) { //no valid process given, skip execution
              prints("No such file or directory\n");
              continue;

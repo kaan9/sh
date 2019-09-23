@@ -5,7 +5,7 @@
 #define ARGC 2   //expected maximum value of argc
 #define RDLEN 1024  //length of input to be read (including terminating character which becomes '\0')
 #define TOKMAX 512 //maximum number of tokens, this is currently safe with RDLEN = 1024
-#define PROCMAX 256 //maximum number of processes generated directly from tokens, this is currently sade with RDLEN = 1024
+#define PROCMAX 256 //maximum number of processes generated directly from tokens, this is currently safe with RDLEN = 1024
 
 #undef getchar
 #undef printc
@@ -25,11 +25,11 @@ struct proc {
     union {
         char * fin; //read from file, NULL indicates read from stdin
         struct proc * pin; //read from process (pipe)
-    }
+    };
     union {
         char * fout; //write to file, NULL indicates write to stdout
-	    struct proc * pout; //write to process (pipe)
-    }
+	struct proc * pout; //write to process (pipe)
+    };
     //determines which members of the union to use
     //00b is fin, fout; 01b is fin, pout; 10b is pin, fout; 11b is pin, pout
     char type;
@@ -78,7 +78,10 @@ int readln(char * buf);
 int tokenize_input(char * buf, char ** argv);
 
 /* parses the tokens into processes
- * makes at most PROCMAX processes
+ * fills the array of processes pointed to by procs
+ * fills at most PROCMAX processes
+ * in-place, modifies procs, does not alloc
+ * returns number of processes parsed 
  */
 int parse_tokens(int tokc, char ** tokens, struct proc * procs);
 

@@ -77,8 +77,7 @@ int getchar() {
 
 void flush() {
     int c;
-    while ((c = getchar()) != '\n' && c != EOF)
-        ;
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
 int readln(char * buf) {
@@ -104,3 +103,41 @@ int tokenize_input(char * buf, char ** argv) {
     *buf = 0;
     return tok_c;
 }
+
+/* [r]edirect, [p]ipeline, [b]ackground check
+ * returns 1 if c is "<", 2 if ">", 3 if "|", 4 if "&", 0 otherwise
+ */
+int is_rpb(char * c) {
+    if(streq(c, "<") return 1;
+    if(streq(c, ">") return 2;
+    if(streq(c, "|") return 3;
+    if(streq(c, "&") return 4;
+    return 0;
+}
+
+int parse_tokens(int tokc, char ** tokens, struct proc * procs) {
+    if(is_rpb(tokens[0])) return 0;
+    int procc = 0;
+
+
+    //iterate over all tokens and separate them into processes, delimited by '|'
+    for (int i = 0; i < tokc && procc < PROCMAX; i++, procc++) {
+        procs[procc].args = tokens + i;
+        while (streq(tokens[i], "|")  && i < tokc) i++;
+        if (streq(tokens[i], "|") tokens[i] = NULL;
+        
+    } 
+
+    char **  token_p = tokens;
+
+    while (token_p - tokens < tokc && procc < PROCMAX) {
+        procs[procc++].args = token_p
+        while (is_rbp(tokens[token_p] != 3 && topen_p < tokc + tokens) tokens
+    }
+    
+    proces[0].args = tokens;
+    while(!rpbcheck(
+    return 1;
+}
+
+
