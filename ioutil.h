@@ -69,13 +69,19 @@ void flush();
  */
 int readln(char * buf);
 
-/* tokenizes a null terminated string buf of tokens delimited by whitespace
+/* tokenizes a null terminated string buf of tokens delimiting
+ * whitespace and separating '&', '|', '<', '>' tokens
  * makes at most TOKMAX tokens and points to them with argv
- * in-place, modifies buf by overwriting spaces with 0
+ * not in-place, each string in argv is malloc'd and must be freed
  * buf must be 0-terminated
  * returns number of tokens
  */
 int tokenize_input(char * buf, char ** argv);
+
+/**
+ * frees an array of strings of length len
+ */
+void free_str_array(char ** argv, size_t len);
 
 /* parses the tokens into processes
  * fills the array of processes pointed to by procs

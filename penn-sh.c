@@ -23,14 +23,15 @@ int main(int argc, const char ** argv) {
     //buffer for reading a line
     char buf[RDLEN];
     int tokc = 0; //number of tokens
-    char * tokens[TOKMAX]; //tokens parsed from input 
+    char * tokens[TOKMAX]; //tokens parsed from input, only tokens in main contains allocated memory
     int procc = 0; //number of processes
     struct proc procs[PROCMAX]; //processes filtered from tokens
 
     while (1) {
         prints("penn-sh# ");
-        if (!readln(buf) || streq(buf, "exit")) endl(), exit(EXIT_SUCCESS); //exit if the readln receives an EOF or the input is "exit"
-       
+        if (!readln(buf) || streq(buf, "exit")) endl(), break; //exit if the readln receives an EOF or the input is "exit"
+        
+	free_str_array(tokens, tokc);
         tokc = tokenize_input(buf, tokens);
         tokens[tokc] = 0;
         if (!tokc) continue; // if no lines entered, skip execution
@@ -55,7 +56,6 @@ int main(int argc, const char ** argv) {
         }
     }
     
-    
-    
+    free_str_array(tokens, tokc);
     exit(EXIT_SUCCESS);
 }

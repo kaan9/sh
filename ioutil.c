@@ -6,7 +6,8 @@
 #include <stdlib.h>  //for exit
 #include <unistd.h>
 
-#include "strutil.h"  //Extra Credit: string utility functions (strlen, atoi), string.h not used
+#include "strutil.h" 
+#include "tokenizer.h"
 
 #include "ioutil.h"
 
@@ -94,15 +95,23 @@ int readln(char * buf) {
 
 int tokenize_input(char * buf, char ** argv) {
     int tok_c = 0;  //count of current token
-    while (tok_c < TOKMAX) {
-        while (isspace(*buf)) *buf++ = 0;
-        if (!*buf) return tok_c;  //no tokens
-        argv[tok_c++] = buf;
-        while (!isspace(*buf) && *buf) buf++;
-    }
-    *buf = 0;
+    char * tok = NULL; //temp token
+    TOKENIZER * tokenizer = init_tokenizer(buf);
+    if(!tokenizer) return 0; //error in creating tokenizer
+
+    while (tok_c < TOKMAX && (tok = get_next_token(tokenizer))) argv[tok_c++] = tok;
+    
+    free_tokenizer(tokenizer);
+
     return tok_c;
 }
+
+void free_str_array(char ** argv, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        free(argv[i]);
+    }
+}
+
 
 /* [r]edirect, [p]ipeline, [b]ackground check
  * returns 1 if s is "<", 2 if ">", 3 if "|", 4 if "&", 0 otherwise
