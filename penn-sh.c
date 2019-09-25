@@ -27,7 +27,7 @@ int main(int argc, const char ** argv) {
     int procc = 0;               //number of processes
     struct proc procs[PROCMAX];  //processes filtered from tokens
 
-    while (1) {
+    for (;;) {
         prints("penn-sh# ");
         if ((!readln(buf) && (endl(), 1)) || streq(buf, "exit")) break;  //exit if the readln receives an EOF or the input is "exit"
 
