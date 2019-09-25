@@ -2,7 +2,7 @@
 
 #include "linkedlist.h"
 
-deque * make_list(void * val, int (*deleter)(void *)) {
+const deque * make_list(void * val, int (*deleter)(void *)) {
     if (!val) return NULL;  //NULL values not allowed in deque
     deque * d = malloc(sizeof(deque));
     if (!d) return NULL;  //if malloc fails, return NULL
@@ -14,8 +14,10 @@ deque * make_list(void * val, int (*deleter)(void *)) {
     return d;
 }
 
-int delete_list(deque * d) {
+int delete_list(const deque * deq) {
+    deque * d = (deque *)deq;  //remove the const
     if (!d) return -1;
+
     int success        = 0;
     struct node * curr = d->head;
     while (curr) {
@@ -27,16 +29,20 @@ int delete_list(deque * d) {
     return success;  //return the total of vals returned by the deallocator, if no errors present should be 0
 }
 
-void * list_front(deque * d) {
+void * list_front(const deque * deq) {
+    deque * d = (deque *)deq;  //remove the const
     return d ? d->head->val : NULL;
 }
 
-void * list_back(deque * d) {
+void * list_back(const deque * deq) {
+    deque * d = (deque *)deq;  //remove the const
     return d ? d->tail->val : NULL;
 }
 
-deque * push_back(deque * d, void * val) {
+const deque * push_back(const deque * deq, void * val) {
+    deque * d = (deque *)deq;  //remove the const
     if (!val || !d) return d;  //null values not allowed in deque
+
     struct node * tmp = malloc(sizeof(struct node));
     tmp->val          = val;
     tmp->prev         = d->tail;
@@ -44,8 +50,11 @@ deque * push_back(deque * d, void * val) {
     return d;
 }
 
-deque * push_front(deque * d, void * val) {
+const deque * push_front(const deque * deq, void * val) {
+    deque * d = (deque *)deq;  //remove the const
     if (!val || !d) return d;  //null values not allowed in deque
+
+
     struct node * tmp = malloc(sizeof(struct node));
     tmp->val          = val;
     tmp->next         = d->head;
@@ -53,11 +62,14 @@ deque * push_front(deque * d, void * val) {
     return d;
 }
 
-void * pop_back(deque * d) {
+void * pop_back(const deque * deq) {
+    deque * d = (deque *)deq;  //remove the const
     if (!d) return NULL;  //invalid input
+
     struct node * tmp = d->tail;
-    d->tail           = d->tail->prev;
-    void * val        = tmp->val;
+
+    d->tail    = d->tail->prev;
+    void * val = tmp->val;
     free(tmp);
 
     if (!d->tail) free(d);  //if no elements left in deque, destroy deque
@@ -65,8 +77,10 @@ void * pop_back(deque * d) {
     return val;
 }
 
-void * pop_front(deque * d) {
+void * pop_front(const deque * deq) {
+    deque * d = (deque *)deq;  //remove the const
     if (!d) return NULL;  //invalid input
+
     struct node * tmp = d->head;
     d->head           = d->head->next;
     void * val        = tmp->val;
@@ -82,8 +96,10 @@ struct node * traverse(struct node * n, size_t i) {
     return traverse(n->next, i - 1);
 }
 
-void * get(deque * d, size_t i) {
+void * get(const deque * deq, size_t i) {
+    deque * d = (deque *)deq;  //remove the const
     if (!d || i < 0) return NULL;
+
     struct node * node_i = traverse(d->head, i);
     return node_i ? node_i->val : NULL;
 }

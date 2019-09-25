@@ -29,9 +29,9 @@ int main(int argc, const char ** argv) {
 
     for (;;) {
         prints("penn-sh# ");
-        if ((!readln(buf) && (endl(), 1)) || streq(buf, "exit")) break;  //exit if the readln receives an EOF or the input is "exit"
+        if ((!readln(buf) && (endl(), 1)) || streq(buf, "exit")) break;  //break if the readln receives an EOF or "exit"
 
-        free_str_array(tokens, tokc);
+        free_str_array(tokens, tokc); //free previous allocations before having tokens point to new memory
         tokc         = tokenize_input(buf, tokens);
         tokens[tokc] = 0;
         if (!tokc) continue;  // if no lines entered, skip execution

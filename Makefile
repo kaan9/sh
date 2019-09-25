@@ -1,8 +1,8 @@
 CC = clang
 CFLAGS = -Wall
 OFLAGS = -Wall -c
-SRCS = strutil.c ioutil.c tokenizer.c penn-sh.c
-OBJS = strutil.o ioutil.o tokenizer.o penn-sh.o
+SRCS = strutil.c ioutil.c linkedlist.c tokenizer.c penn-sh.c
+OBJS = strutil.o ioutil.o linkedlist.o tokenizer.o penn-sh.o
 TARGETS = clean penn-sh
 LIBS = 
 
