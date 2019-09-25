@@ -3,28 +3,28 @@
 #include "linkedlist.h"
 
 deque * make_list(void * val, int (*deleter)(void *)) {
-    if (!val) return NULL; //NULL values not allowed in deque
+    if (!val) return NULL;  //NULL values not allowed in deque
     deque * d = malloc(sizeof(deque));
-    if (!d) return NULL; //if malloc fails, return NULL
+    if (!d) return NULL;  //if malloc fails, return NULL
     d->dealloc = deleter;
     d->tail = d->head = malloc(sizeof(struct node));
-    if (!d->head) return NULL; //if malloc fails, return NULL
-    d->head->val = val;
+    if (!d->head) return NULL;  //if malloc fails, return NULL
+    d->head->val  = val;
     d->head->prev = d->head->next = NULL;
     return d;
 }
 
 int delete_list(deque * d) {
     if (!d) return -1;
-    int success = 0;
+    int success        = 0;
     struct node * curr = d->head;
     while (curr) {
         if (d->dealloc) success += d->dealloc(curr->val);
         struct node * tmp = curr->next;
-	free(curr);
-	curr = tmp;
+        free(curr);
+        curr = tmp;
     }
-    return success; //return the total of vals returned by the deallocator, if no errors present should be 0
+    return success;  //return the total of vals returned by the deallocator, if no errors present should be 0
 }
 
 void * list_front(deque * d) {
@@ -36,43 +36,43 @@ void * list_back(deque * d) {
 }
 
 deque * push_back(deque * d, void * val) {
-    if (!val || !d) return d; //null values not allowed in deque
+    if (!val || !d) return d;  //null values not allowed in deque
     struct node * tmp = malloc(sizeof(struct node));
-    tmp->val = val;
-    tmp->prev = d->tail;
+    tmp->val          = val;
+    tmp->prev         = d->tail;
     d->tail = d->tail->next = tmp;
     return d;
 }
 
 deque * push_front(deque * d, void * val) {
-    if (!val || !d) return d; //null values not allowed in deque
+    if (!val || !d) return d;  //null values not allowed in deque
     struct node * tmp = malloc(sizeof(struct node));
-    tmp->val = val;
-    tmp->next = d->head;
+    tmp->val          = val;
+    tmp->next         = d->head;
     d->head = d->head->prev = tmp;
     return d;
 }
 
 void * pop_back(deque * d) {
-    if (!d) return NULL; //invalid input
+    if (!d) return NULL;  //invalid input
     struct node * tmp = d->tail;
-    d->tail = d->tail->prev;
-    void * val = tmp->val;
+    d->tail           = d->tail->prev;
+    void * val        = tmp->val;
     free(tmp);
 
-    if (!d->tail) free(d); //if no elements left in deque, destroy deque
+    if (!d->tail) free(d);  //if no elements left in deque, destroy deque
     d->tail->next = NULL;
     return val;
 }
 
 void * pop_front(deque * d) {
-    if (!d) return NULL; //invalid input
+    if (!d) return NULL;  //invalid input
     struct node * tmp = d->head;
-    d->head = d->head->next;
-    void * val = tmp->val;
+    d->head           = d->head->next;
+    void * val        = tmp->val;
     free(tmp);
 
-    if (!d->head) free(d); //if no elements left in deque, destroy deque
+    if (!d->head) free(d);  //if no elements left in deque, destroy deque
     d->head->prev = NULL;
     return val;
 }

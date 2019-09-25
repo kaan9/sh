@@ -14,7 +14,6 @@
  * O(1) for all operations except get(i) which is O(n)
  */
 
-
 /* a node struct contains a pointer to a value (does not contain the value) 
  * and pointers to the previous and next nodes in the linked list
  * a pointer value of NULL indicates no prev/next node

@@ -6,7 +6,7 @@
 #include <stdlib.h>  //for exit
 #include <unistd.h>
 
-#include "strutil.h" 
+#include "strutil.h"
 #include "tokenizer.h"
 
 #include "ioutil.h"
@@ -63,6 +63,7 @@ void printi(int n) {
     }
 }
 
+//prints newline, retuns 0 on success
 void endl() {
     printc('\n');
 }
@@ -78,7 +79,8 @@ int getchar() {
 
 void flush() {
     int c;
-    while ((c = getchar()) != '\n' && c != EOF);
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
 }
 
 int readln(char * buf) {
@@ -94,13 +96,13 @@ int readln(char * buf) {
 }
 
 int tokenize_input(char * buf, char ** argv) {
-    int tok_c = 0;  //count of current token
-    char * tok = NULL; //temp token
+    int tok_c             = 0;     //count of current token
+    char * tok            = NULL;  //temp token
     TOKENIZER * tokenizer = init_tokenizer(buf);
-    if(!tokenizer) return 0; //error in creating tokenizer
+    if (!tokenizer) return 0;  //error in creating tokenizer
 
     while (tok_c < TOKMAX && (tok = get_next_token(tokenizer))) argv[tok_c++] = tok;
-    
+
     free_tokenizer(tokenizer);
 
     return tok_c;
@@ -112,15 +114,14 @@ void free_str_array(char ** argv, size_t len) {
     }
 }
 
-
 /* [r]edirect, [p]ipeline, [b]ackground check
  * returns 1 if s is "<", 2 if ">", 3 if "|", 4 if "&", 0 otherwise
  */
 int is_rpb(const char * s) {
-    if(streq(s, "<")) return 1;
-    if(streq(s, ">")) return 2;
-    if(streq(s, "|")) return 3;
-    if(streq(s, "&")) return 4;
+    if (streq(s, "<")) return 1;
+    if (streq(s, ">")) return 2;
+    if (streq(s, "|")) return 3;
+    if (streq(s, "&")) return 4;
     return 0;
 }
 
@@ -134,27 +135,24 @@ int parse_backg_proc(struct proc * p) {
 }
 
 int parse_tokens(int tokc, char ** tokens, struct proc * procs) {
-    if(is_rpb(tokens[0])) return 0;
+    if (is_rpb(tokens[0])) return 0;
     int procc = 0;
 
     //iterate over all tokens and separate them into processes, delimited by '|'
     //change '|' to NULL when encountered so args is NULL-terminated
     for (int i = 0; i < tokc && procc < PROCMAX; i++, procc++) {
-        if (is_rpb(tokens[i])) return 0; //if the character after a '|' is an rbp, invalid syntax
+        if (is_rpb(tokens[i])) return 0;  //if the character after a '|' is an rbp, invalid syntax
         procs[procc].args = tokens + i;
-        while (streq(tokens[i], "|")  && i < tokc) i++;
+        while (streq(tokens[i], "|") && i < tokc) i++;
         if (streq(tokens[i], "|")) tokens[i] = NULL;
-    } 
+    }
 
     //iterate over all processes and extract the '<', '>' arguments
     //replace '<' and '>' with NULL when encountered so args is NULL-terminated
     //and  only refers to the process call and arguments and not to redirections
     for (int p = 0; p < procc; p++) {
         parse_backg_proc(procs + p);
-
     }
 
     return procc;
 }
-
-

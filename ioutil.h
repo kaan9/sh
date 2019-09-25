@@ -2,10 +2,10 @@
 #ifndef IOUTIL_H
 #define IOUTIL_H
 
-#define ARGC 2   //expected maximum value of argc
-#define RDLEN 1024  //length of input to be read (including terminating character which becomes '\0')
-#define TOKMAX 512 //maximum number of tokens, this is currently safe with RDLEN = 1024
-#define PROCMAX 256 //maximum number of processes generated directly from tokens, this is currently safe with RDLEN = 1024
+#define ARGC 2       //expected maximum value of argc
+#define RDLEN 1024   //length of input to be read (including terminating character which becomes '\0')
+#define TOKMAX 512   //maximum number of tokens, this is currently safe with RDLEN = 1024
+#define PROCMAX 256  //maximum number of processes generated directly from tokens, this is currently safe with RDLEN = 1024
 
 #undef getchar
 #undef printc
@@ -16,19 +16,18 @@
 #undef flush
 #undef readln
 
-
 //struct to represent processes after the line is parsed
 //filename pointed to by out/in is where proc reads and writes from
 //if null, reads and writes from stdin/stdout
 struct proc {
-    char ** args; //name of proc is args[0], args is 0-terminated
+    char ** args;  //name of proc is args[0], args is 0-terminated
     union {
-        char * fin; //read from file, NULL indicates read from stdin
-        struct proc * pin; //read from process (pipe)
+        char * fin;         //read from file, NULL indicates read from stdin
+        struct proc * pin;  //read from process (pipe)
     };
     union {
-        char * fout; //write to file, NULL indicates write to stdout
-	struct proc * pout; //write to process (pipe)
+        char * fout;         //write to file, NULL indicates write to stdout
+        struct proc * pout;  //write to process (pipe)
     };
     //determines which members of the union to use
     //00b is fin, fout; 01b is fin, pout; 10b is pin, fout; 11b is pin, pout
@@ -53,7 +52,7 @@ void printu(unsigned long n);
 /* prints a signed integer*/
 void printi(int n);
 
-/* prints endline */
+/* prints endline*/
 void endl();
 
 /* reads a character from stdin */
