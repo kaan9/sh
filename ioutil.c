@@ -152,5 +152,6 @@ int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
         break;
     }
 
-    return procc;
+    //return procc;
+    return 1; //until parse_tokens is finished
 }
