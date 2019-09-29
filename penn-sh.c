@@ -33,6 +33,7 @@ int main(int argc, const char ** argv) {
 
         free_str_array(tokens, tokc); //free previous allocations before having tokens point to new memory
         tokc         = tokenize_input(buf, tokens);
+        //free last token?
         tokens[tokc] = 0;
         if (!tokc) continue;  // if no lines entered, skip execution
 
@@ -43,6 +44,11 @@ int main(int argc, const char ** argv) {
         }
 
         pid_t pid = fork();
+        if (pid < 0) {
+            perror("Invalid fork");
+            free_str_array(tokens, tokc);
+            exit(EXIT_FAILURE);
+        }
         if (!pid) {
             execvp(tokens[0], tokens);
             //if execvp returns, it has failed and will print no such file or directory

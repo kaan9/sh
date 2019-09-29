@@ -34,6 +34,9 @@ struct proc {
     char type;
 };
 
+
+struct 
+
 /* checks the arguments passed to main and parses the value of timeout */
 int check_args(int argc, const char ** argv);
 
