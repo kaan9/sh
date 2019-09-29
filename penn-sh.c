@@ -22,25 +22,24 @@ int main(int argc, const char ** argv) {
 
     //buffer for reading a line
     char buf[RDLEN];
-    int tokc = 0;                //number of tokens
-    char * tokens[TOKMAX];       //tokens parsed from input, only tokens contains allocated memory in main
-    int procc = 0;               //number of processes
-    struct proc procs[PROCMAX];  //processes filtered from tokens
+    int tokc = 0;           //number of tokens
+    char * tokens[TOKMAX];  //tokens parsed from input, only tokens contains allocated memory in main
+    int procc = 0;          //number of processes
+    PROC_LIST proc_list;    //processes filtered from tokens
 
     for (;;) {
         prints("penn-sh# ");
         if ((!readln(buf) && (endl(), 1)) || streq(buf, "exit")) break;  //break if the readln receives an EOF or "exit"
 
-        free_str_array(tokens, tokc); //free previous allocations before having tokens point to new memory
+        free_str_array(tokens, tokc);  //free previous allocations before having tokens point to new memory
 
         tokc = tokenize_input(buf, tokens);
         if (!tokc) continue;  // if no lines entered, skip execution
 
-        if (tokc == TOKMAX) free(tokens[tokc--]); // edge case, must not have last token
-        tokens[tokc] = 0; //tokens should be null terminated
-        
+        if (tokc == TOKMAX) free(tokens[tokc--]);  // edge case, must not have last token
+        tokens[tokc] = 0;                          //tokens should be null terminated
 
-        procc = parse_tokens(tokc, tokens, procs);
+        procc = parse_tokens(tokc, tokens, &proc_list);
         if (!procc) {  //no valid process given, skip execution
             prints("Invalid: No such file or directory\n");
             continue;

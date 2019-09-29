@@ -7,6 +7,8 @@
 #define TOKMAX 512   //maximum number of tokens, this is currently safe with RDLEN = 1024
 #define PROCMAX 256  //maximum number of processes generated directly from tokens, this is currently safe with RDLEN = 1024
 
+//if functions of the same signature are defined in a header, their implementations are typically in the form of macros
+//this ensures that the correct implementation is as is in this file
 #undef getchar
 #undef printc
 #undef prints
@@ -17,14 +19,14 @@
 #undef readln
 
 typedef struct {
-    char ** procs[PROCMAX];
-    char * input_redirect = NULL;
-    char * output_redirect = NULL;
-    
-    int procc;
-    char is_background = 0;
+    char ** procs[PROCMAX];  //pointer to the argv of each process to be executed (argv[0] is proc name), proc[i] is pipelined to proc[i+1]
+    char * input_redirect;   // if NULL, read from stdin
+    char * output_redirect;  // if NULL, write to stdout
 
-} proc_list;
+    int procc;               //number of processes
+    char is_background;  //1 if running the process in the background, 0 otherwise
+
+} PROC_LIST;
 
 /* checks the arguments passed to main and parses the value of timeout */
 int check_args(int argc, const char ** argv);
@@ -60,7 +62,7 @@ void flush();
  */
 int readln(char * buf);
 
-/* tokenizes a null terminated string buf of tokens delimiting
+/** tokenizes a null terminated string buf of tokens delimiting
  * whitespace and separating '&', '|', '<', '>' tokens
  * makes at most TOKMAX tokens and points to them with argv
  * not in-place, each string in argv is malloc'd and must be freed
@@ -74,12 +76,13 @@ int tokenize_input(char * buf, char ** argv);
  */
 void free_str_array(char ** argv, size_t len);
 
-/* parses the tokens into processes
+/* parses the tokens into an instance of proc_list
  * fills the array of processes pointed to by procs
  * fills at most PROCMAX processes
- * in-place, modifies procs, does not alloc
- * returns number of processes parsed 
+ * in-place, modifies proc_list, does not alloc
+ * does not modify proc_list if an error occurs in parsing
+ * returns number of processes parsed or 0 if an parsing error occurred
  */
-int parse_tokens(int tokc, char ** tokens, struct proc * procs);
+int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list);
 
 #endif

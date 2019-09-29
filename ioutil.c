@@ -125,33 +125,31 @@ int is_rpb(const char * s) {
     return 0;
 }
 
-/* checks if process has "&" in its arguments, modifies p->type
- * and alters args by changing "&" to NULL pointer 
- * if there are arguments after &, error
- * returns 0 if 
- */
-int parse_backg_proc(struct proc * p) {
-    return 0;
-}
+int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
+    PROC_LIST procl;  //temporary instance of PROC_LIST, to be copied into proc_list if parsing successful
 
-int parse_tokens(int tokc, char ** tokens, struct proc * procs) {
-    if (is_rpb(tokens[0])) return 0;
-    int procc = 0;
+    //handle background terminating background process
+    if (streq(tokens[tokc - 1], "&")) {
+        procl.is_background = 1;
+        free(tokens[tokc - 1]);
+        tokens[tokc - 1] = NULL;
+    } else
+        procl.is_background = 0;
 
-    //iterate over all tokens and separate them into processes, delimited by '|'
-    //change '|' to NULL when encountered so args is NULL-terminated
-    for (int i = 0; i < tokc && procc < PROCMAX; i++, procc++) {
-        if (is_rpb(tokens[i])) return 0;  //if the character after a '|' is an rbp, invalid syntax
-        procs[procc].args = tokens + i;
-        while (streq(tokens[i], "|") && i < tokc) i++;
-        if (streq(tokens[i], "|")) tokens[i] = NULL;
+    //loop over all entries and check for errors
+    //effectively, any consecutive special characters or the first or last string being special chars is an error
+    //everything else is (syntactically) valid
+    int is_rpb_char = 1;  //is special character
+    for (int i = 0; i < tokc - 1; i++) {
+        if (is_rpb_char && (is_rpb_char = is_rpb(tokens[i]))) return 0;
     }
+    if (tokens[tokc - 1] && is_rpb(tokens[tokc - 1])) return 0;
 
-    //iterate over all processes and extract the '<', '>' arguments
-    //replace '<' and '>' with NULL when encountered so args is NULL-terminated
-    //and  only refers to the process call and arguments and not to redirections
-    for (int p = 0; p < procc; p++) {
-        parse_backg_proc(procs + p);
+    int procc        = 0;
+    char ** curr_tok = tokens;
+    while (procc < PROCMAX && curr_tok < tokens + tokc) {
+        procc++;
+        break;
     }
 
     return procc;
