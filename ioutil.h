@@ -16,26 +16,15 @@
 #undef flush
 #undef readln
 
-//struct to represent processes after the line is parsed
-//filename pointed to by out/in is where proc reads and writes from
-//if null, reads and writes from stdin/stdout
-struct proc {
-    char ** args;  //name of proc is args[0], args is 0-terminated
-    union {
-        char * fin;         //read from file, NULL indicates read from stdin
-        struct proc * pin;  //read from process (pipe)
-    };
-    union {
-        char * fout;         //write to file, NULL indicates write to stdout
-        struct proc * pout;  //write to process (pipe)
-    };
-    //determines which members of the union to use
-    //00b is fin, fout; 01b is fin, pout; 10b is pin, fout; 11b is pin, pout
-    char type;
-};
+typedef struct {
+    char ** procs[PROCMAX];
+    char * input_redirect = NULL;
+    char * output_redirect = NULL;
+    
+    int procc;
+    char is_background = 0;
 
-
-struct 
+} proc_list;
 
 /* checks the arguments passed to main and parses the value of timeout */
 int check_args(int argc, const char ** argv);

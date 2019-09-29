@@ -33,8 +33,7 @@ int main(int argc, const char ** argv) {
 
         free_str_array(tokens, tokc); //free previous allocations before having tokens point to new memory
         tokc         = tokenize_input(buf, tokens);
-        //free last token?
-        tokens[tokc] = 0;
+        tokens[tokc] = 0; 
         if (!tokc) continue;  // if no lines entered, skip execution
 
         procc = parse_tokens(tokc, tokens, procs);
