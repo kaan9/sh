@@ -32,9 +32,13 @@ int main(int argc, const char ** argv) {
         if ((!readln(buf) && (endl(), 1)) || streq(buf, "exit")) break;  //break if the readln receives an EOF or "exit"
 
         free_str_array(tokens, tokc); //free previous allocations before having tokens point to new memory
-        tokc         = tokenize_input(buf, tokens);
-        tokens[tokc] = 0; 
+
+        tokc = tokenize_input(buf, tokens);
         if (!tokc) continue;  // if no lines entered, skip execution
+
+        if (tokc == TOKMAX) free(tokens[tokc--]); // edge case, must not have last token
+        tokens[tokc] = 0; //tokens should be null terminated
+        
 
         procc = parse_tokens(tokc, tokens, procs);
         if (!procc) {  //no valid process given, skip execution
