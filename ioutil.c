@@ -130,11 +130,11 @@ int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
 
     //handle background terminating background process
     if (streq(tokens[tokc - 1], "&")) {
-        procl.is_background = 1;
+        proc_list->is_background = 1;
         free(tokens[tokc - 1]);
         tokens[--tokc] = NULL;
     } else {
-        procl.is_background = 0;
+        proc_list->is_background = 0;
     }
 
     //count number of entries
