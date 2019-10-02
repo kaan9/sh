@@ -64,7 +64,7 @@ int main(int argc, const char ** argv) {
             }
         }
         printc('\n');
-/*
+
         pid_t pid = fork();
         if (pid < 0) {
             perror("Invalid fork");
@@ -80,7 +80,7 @@ int main(int argc, const char ** argv) {
             int status = 0;
             cpid       = pid;
             wait(&status);
-        }*/
+        }
     }
 
     free_str_array(tokens, tokc);

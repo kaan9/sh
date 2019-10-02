@@ -143,7 +143,7 @@ int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
 
     //distribute the processes in the tokens into proc_list, delimited by "|"
     proc_list->procs[procc++] = tokens;
-    for (int i = 1; i < tokc - 1; i++)
+    for (int i = 0; i < tokc - 1; i++)
         if (streq(tokens[i], "&"))
             return 0;  //invalid char
         else if (streq(tokens[i], "|")) {
@@ -159,14 +159,17 @@ int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
 
     char ** argv;  //temporary for a process
 
-    //iterate over all processes except the first and the last and check for invalid "<", ">"
-    for (int i = 1; i < procc - 1; i++) {
-        argv = proc_list->procs[i];  // arguments of ith process
-        while (*argv) {
-            if (streq(*argv, "<") || streq(*argv, ">")) return 0;
-            argv++;
+    //check first process for invalid token
+    if (streq(proc_list->procs[0][0], "<") || streq(proc_list->procs[0][0], ">") || streq(proc_list->procs[procc - 1][0], "<") || streq(proc_list->procs[procc - 1][0], ">")) return 0;
+
+        //iterate over all processes except the first and the last and check for invalid "<", ">"
+        for (int i = 1; i < procc - 1; i++) {
+            argv = proc_list->procs[i];  // arguments of ith process
+            while (*argv) {
+                if (streq(*argv, "<") || streq(*argv, ">")) return 0;
+                argv++;
+            }
         }
-    }
 
     //check the first process for input redirection, also account for output redirection if procc = 1
     argv                       = proc_list->procs[0];
@@ -208,7 +211,7 @@ int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
             //if there is already a value output_redirect, there's a duplicate ">" so quit
             if (proc_list->output_redirect) return 0;
             // if output redirect and the next character is invalid, fail
-            if (!*(argv + 1) || streq(*(argv + 1), "<") || streq(*(argv + 1), ">")) return 0; 
+            if (!*(argv + 1) || streq(*(argv + 1), "<") || streq(*(argv + 1), ">")) return 0;
             proc_list->output_redirect = *(argv + 1);
             free(*argv);
             *argv = NULL;
