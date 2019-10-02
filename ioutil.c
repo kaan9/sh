@@ -37,6 +37,7 @@ void printc(char c) {
 }
 
 void prints(const char * s) {
+    if (!s) return;
     while (*s) printc(*s++);
 }
 
@@ -126,31 +127,96 @@ int is_rpb(const char * s) {
 }
 
 int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
-    PROC_LIST procl;  //temporary instance of PROC_LIST, to be copied into proc_list if parsing successful
+    int procc = 0;  //number of processes
 
     //handle background terminating background process
     if (streq(tokens[tokc - 1], "&")) {
-        procl.is_background = 1;
+        proc_list->is_background = 1;
         free(tokens[tokc - 1]);
-        tokens[tokc - 1] = NULL;
-    } else
-        procl.is_background = 0;
-
-    //loop over all entries and check for errors
-    //effectively, any consecutive special characters or the first or last string being special chars is an error
-    //everything else is (syntactically) valid
-    int is_rpb_char = 1;  //is special character
-    for (int i = 0; i < tokc - 1; i++) {
-        if (is_rpb_char && (is_rpb_char = is_rpb(tokens[i]))) return 0;
+        tokens[--tokc] = NULL;
+    } else {
+        proc_list->is_background = 0;
     }
-    if (tokens[tokc - 1] && is_rpb(tokens[tokc - 1])) return 0;
 
-    int procc        = 0;
-    char ** curr_tok = tokens;
-    while (procc < PROCMAX && curr_tok < tokens + tokc) {
-        procc++;
-        break;
-    }
+    //count number of entries
+    if (streq(tokens[0], "|") || streq(tokens[tokc - 1], "|")) return 0;
+
+    //distribute the processes in the tokens into proc_list, delimited by "|"
+    proc_list->procs[procc++] = tokens;
+    for (int i = 0; i < tokc - 1; i++)
+        if (streq(tokens[i], "&"))
+            return 0;  //invalid char
+        else if (streq(tokens[i], "|")) {
+            //check for invalid consecutive characters
+            if (streq(tokens[i + 1], "|") || streq(tokens[i + 1], "<") || streq(tokens[i + 1], ">")) return 0;
+
+            proc_list->procs[procc++] = tokens + i + 1;  // get the next process into proc_list
+            free(tokens[i]);
+            tokens[i] = NULL;  // free and set to NULL the "|" tokens so that each argv in proc_list->procs is NULL-terminated
+        }
+
+    proc_list->procc = procc;
+
+    char ** argv;  //temporary for a process
+
+    //check first process for invalid token
+    if (streq(proc_list->procs[0][0], "<") || streq(proc_list->procs[0][0], ">") || streq(proc_list->procs[procc - 1][0], "<") || streq(proc_list->procs[procc - 1][0], ">")) return 0;
+
+        //iterate over all processes except the first and the last and check for invalid "<", ">"
+        for (int i = 1; i < procc - 1; i++) {
+            argv = proc_list->procs[i];  // arguments of ith process
+            while (*argv) {
+                if (streq(*argv, "<") || streq(*argv, ">")) return 0;
+                argv++;
+            }
+        }
+
+    //check the first process for input redirection, also account for output redirection if procc = 1
+    argv                       = proc_list->procs[0];
+    proc_list->input_redirect  = NULL;
+    proc_list->output_redirect = NULL;
+    if (!*argv) return 0;
+    do {
+        if (streq(*argv, "<")) {
+            // if input redirect and the next character is invalid, fail
+            if (!*(argv + 1) || streq(*(argv + 1), "<") || streq(*(argv + 1), ">")) return 0;
+            //if there is already a value input_redirect, there's a duplicate "<" so quit
+            if (proc_list->input_redirect) return 0;
+            proc_list->input_redirect = *(argv + 1);
+            free(*argv);
+            *argv = NULL;
+        } else if (streq(*argv, ">")) {
+            if (procc == 1) {
+                // if output redirect and the next character is invalid, fail
+                if (!*(argv + 1) || streq(*(argv + 1), "<") || streq(*(argv + 1), ">")) return 0;
+                //if there is already a value output_redirect, there's a duplicate ">" so quit
+                if (proc_list->output_redirect) return 0;
+                proc_list->output_redirect = *(argv + 1);
+                free(*argv);
+                *argv = NULL;
+            } else
+                return 0;  //invalid input
+        }
+    } while (*++argv);
+
+    if (procc == 1) return procc;  //if there is only one process, parsing is complete
+
+    //check the last process for (possibly duplicate) output redirection, also check for invalid input redirection
+    argv = proc_list->procs[procc - 1];
+    if (!*argv) return 0;
+    do {
+        if (streq(*argv, "<"))
+            return 0;  //invalid char
+        else if (streq(*argv, ">")) {
+            //if there is already a value output_redirect, there's a duplicate ">" so quit
+            if (proc_list->output_redirect) return 0;
+            // if output redirect and the next character is invalid, fail
+            if (!*(argv + 1) || streq(*(argv + 1), "<") || streq(*(argv + 1), ">")) return 0;
+            proc_list->output_redirect = *(argv + 1);
+            free(*argv);
+            *argv = NULL;
+        }
+    } while (*++argv);
 
     return procc;
 }

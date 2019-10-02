@@ -54,7 +54,6 @@ const deque * push_front(const deque * deq, void * val) {
     deque * d = (deque *)deq;  //remove the const
     if (!val || !d) return d;  //null values not allowed in deque
 
-
     struct node * tmp = malloc(sizeof(struct node));
     tmp->val          = val;
     tmp->next         = d->head;
@@ -64,7 +63,7 @@ const deque * push_front(const deque * deq, void * val) {
 
 void * pop_back(const deque * deq) {
     deque * d = (deque *)deq;  //remove the const
-    if (!d) return NULL;  //invalid input
+    if (!d) return NULL;       //invalid input
 
     struct node * tmp = d->tail;
 
@@ -79,7 +78,7 @@ void * pop_back(const deque * deq) {
 
 void * pop_front(const deque * deq) {
     deque * d = (deque *)deq;  //remove the const
-    if (!d) return NULL;  //invalid input
+    if (!d) return NULL;       //invalid input
 
     struct node * tmp = d->head;
     d->head           = d->head->next;

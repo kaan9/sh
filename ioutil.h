@@ -23,7 +23,7 @@ typedef struct {
     char * input_redirect;   // if NULL, read from stdin
     char * output_redirect;  // if NULL, write to stdout
 
-    int procc;               //number of processes
+    int procc;           //number of processes
     char is_background;  //1 if running the process in the background, 0 otherwise
 
 } PROC_LIST;
@@ -80,8 +80,8 @@ void free_str_array(char ** argv, size_t len);
  * fills the array of processes pointed to by procs
  * fills at most PROCMAX processes
  * in-place, modifies proc_list, does not alloc
- * does not modify proc_list if an error occurs in parsing
- * returns number of processes parsed or 0 if an parsing error occurred
+ * if an error occurs may return proc_list with corrupt data
+ * returns number of processes parsed or 0 if a parsing error occurred
  */
 int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list);
 
