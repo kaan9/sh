@@ -1,8 +1,7 @@
 /* strutil.c  --- Implementation of strutil.h ---  Kaan B Erdogmus, CIS 380, kaanberk*/
+#include "strutil.h"
 
 #include <limits.h>  //for INT_MAX, INT_MIN (for portability)
-
-#include "strutil.h"
 
 int streq(const char * s1, const char * s2) {
     return (*s1 && *s2) ? (*s1 == *s2 && streq(s1 + 1, s2 + 1)) : !(*s1 || *s2);

@@ -1,4 +1,5 @@
 /* ioutil.c   --- Implementation of ioutil.h --- Kaan B Erdogmus, CIS 380, kaanberk*/
+#include "ioutil.h"
 
 #include <errno.h>   //for errno
 #include <limits.h>  //for INT_MAX, INT_MIN (for portability)
@@ -8,8 +9,6 @@
 
 #include "strutil.h"
 #include "tokenizer.h"
-
-#include "ioutil.h"
 
 int check_args(int argc, const char ** argv) {
     int timeout = -1;  //default value of -1 indicates no timeout
@@ -162,14 +161,14 @@ int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
     //check first process for invalid token
     if (streq(proc_list->procs[0][0], "<") || streq(proc_list->procs[0][0], ">") || streq(proc_list->procs[procc - 1][0], "<") || streq(proc_list->procs[procc - 1][0], ">")) return 0;
 
-        //iterate over all processes except the first and the last and check for invalid "<", ">"
-        for (int i = 1; i < procc - 1; i++) {
-            argv = proc_list->procs[i];  // arguments of ith process
-            while (*argv) {
-                if (streq(*argv, "<") || streq(*argv, ">")) return 0;
-                argv++;
-            }
+    //iterate over all processes except the first and the last and check for invalid "<", ">"
+    for (int i = 1; i < procc - 1; i++) {
+        argv = proc_list->procs[i];  // arguments of ith process
+        while (*argv) {
+            if (streq(*argv, "<") || streq(*argv, ">")) return 0;
+            argv++;
         }
+    }
 
     //check the first process for input redirection, also account for output redirection if procc = 1
     argv                       = proc_list->procs[0];

@@ -2,6 +2,8 @@
 #ifndef IOUTIL_H
 #define IOUTIL_H
 
+#include <stdio.h> //for the portable size_t datatype
+
 #define ARGC 2       //expected maximum value of argc
 #define RDLEN 1024   //length of input to be read (including terminating character which becomes '\0')
 #define TOKMAX 512   //maximum number of tokens, this is currently safe with RDLEN = 1024

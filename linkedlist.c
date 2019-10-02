@@ -1,5 +1,4 @@
 /* linkedlist.c  --- linkedlist.h implementation ---  Kaan B Erdogmus, Belinda Liu CIS 380, kaanberk*/
-
 #include "linkedlist.h"
 
 const deque * make_list(void * val, int (*deleter)(void *)) {
