@@ -17,6 +17,29 @@ pid_t cpid;
 //do nothing if ^C is received
 void siginthandler(int signum) {}
 
+//executes processes, returns 0 on success, 1 on invalid input, -1 if fork fails
+int exec_procs(PROC_LIST * proc_list) {
+    if (!proc_list && proc_list->procc) return 1;
+    //NOTE: Currently only executes first process
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        perror("Invalid fork");
+        return -1;
+    }
+    if (!pid) {
+        execvp(proc_list->procs[0][0], proc_list->procs[0]);
+        //if execvp returns, it has failed and will print no such file or directory
+        prints("No such file or directory\n");
+        exit(EXIT_FAILURE);
+    } else {
+        int status = 0;
+        cpid       = pid;
+        wait(&status);
+    }
+    return 0;
+}
+
 int main(int argc, const char ** argv) {
     signal(SIGINT, siginthandler);
 
@@ -24,7 +47,6 @@ int main(int argc, const char ** argv) {
     char buf[RDLEN];
     int tokc = 0;           //number of tokens
     char * tokens[TOKMAX];  //tokens parsed from input, only tokens contains allocated memory in main
-    int procc = 0;          //number of processes
     PROC_LIST proc_list;    //processes filtered from tokens
 
     for (;;) {
@@ -33,34 +55,19 @@ int main(int argc, const char ** argv) {
 
         free_str_array(tokens, tokc);  //free previous allocations before having tokens point to new memory
 
-        tokc = tokenize_input(buf, tokens);
-        if (!tokc) continue;  // if no lines entered, skip execution
+        if (!(tokc = tokenize_input(buf, tokens))) continue;  // if no lines entered, skip execution
 
         if (tokc == TOKMAX) free(tokens[tokc--]);  // edge case, must not have last token
         tokens[tokc] = 0;                          //tokens should be null terminated
 
-        procc = parse_tokens(tokc, tokens, &proc_list);
-        if (!procc) {  //no valid process given, skip execution
+        if (!(parse_tokens(tokc, tokens, &proc_list))) {  //no valid process given, skip execution
             prints("Invalid: No such file or directory\n");
             continue;
         }
 
-        
-        pid_t pid = fork();
-        if (pid < 0) {
-            perror("Invalid fork");
+        if (exec_procs(&proc_list) == -1) {
             free_str_array(tokens, tokc);
             exit(EXIT_FAILURE);
-        }
-        if (!pid) {
-            execvp(tokens[0], tokens);
-            //if execvp returns, it has failed and will print no such file or directory
-            prints("No such file or directory\n");
-            exit(EXIT_FAILURE);
-        } else {
-            int status = 0;
-            cpid       = pid;
-            wait(&status);
         }
     }
 
