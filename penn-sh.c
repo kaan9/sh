@@ -45,26 +45,7 @@ int main(int argc, const char ** argv) {
             continue;
         }
 
-        prints("\n Parsed processes:\n");
-        prints("# Processes: ");
-        printi(proc_list.procc);
-        prints("\n Is background: ");
-        printi(proc_list.is_background);
-        prints("\n #Input Redirect: ");
-        prints(proc_list.input_redirect);
-        prints("\n #Output Redirect: ");
-        prints(proc_list.output_redirect);
-        for (int i = 0; i < procc; i++) {
-            prints("\n[");
-            printi(i);
-            prints("] ");
-            for (int j = 0; proc_list.procs[i][j]; j++) {
-                prints(proc_list.procs[i][j]);
-                printc(' ');
-            }
-        }
-        printc('\n');
-
+        
         pid_t pid = fork();
         if (pid < 0) {
             perror("Invalid fork");
