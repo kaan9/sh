@@ -37,6 +37,7 @@ void printc(char c) {
 }
 
 void prints(const char * s) {
+    if (!s) return;
     while (*s) printc(*s++);
 }
 
