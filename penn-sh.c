@@ -1,5 +1,6 @@
 /* penn-sh   ---  Kaan B Erdogmus,Belinda Liu,  CIS 380, kaanberk*/
-#include <errno.h>   //for errno
+#include <errno.h>  //for errno
+#include <fcntl.h>
 #include <limits.h>  //for INT_MAX, INT_MIN (for portability)
 #include <signal.h>
 #include <stdio.h>   //for perror
@@ -7,13 +8,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 //functions for input/output, defines RDLEN, TOKMAX, PROCMAX
 #include "ioutil.h"
 #include "strutil.h"
 
-#define FD int //to differentiate between regular integers and file descriptors
+#define FD int  //to differentiate between regular integers and file descriptors
 
 // to maintain the default input and output as STDOUT_FILENO/STDIN_FILENO get overriden with multiple processes
 FD STDOUT_DFLT;
@@ -30,7 +30,7 @@ int exec_procs(PROC_LIST * proc_list) {
 
     //NOTE: Currently only executes first process with redirection
 
-    FD out_file, in_file; //for the temporary input output
+    FD out_file, in_file;  //for the temporary input output
 
     if (proc_list->input_redirect && (in_file = open(proc_list->input_redirect, O_RDONLY, 0644)) < 0) {
         perror("Invalid: Unable to open input file");
@@ -49,7 +49,7 @@ int exec_procs(PROC_LIST * proc_list) {
     }
     if (!pid) {
         //set stdio and execute
-        dup2(out_file ? out_file : STDOUT_DFLT,STDOUT_FILENO);
+        dup2(out_file ? out_file : STDOUT_DFLT, STDOUT_FILENO);
         dup2(in_file ? in_file : STDIN_DFLT, STDIN_FILENO);
         execvp(proc_list->procs[0][0], proc_list->procs[0]);
         //if execvp returns, it has failed and will print no such file or directory
@@ -60,12 +60,6 @@ int exec_procs(PROC_LIST * proc_list) {
         cpid       = pid;
         wait(&status);
     }
-
-
-    
-
-    
-
 
     return 0;
 }
