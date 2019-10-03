@@ -40,11 +40,12 @@ int main(int argc, const char ** argv) {
         }
 
         int xc_res = exec_procs(&proc_list);
-        if (xc_res == -1) {
-            free_str_array(tokens, tokc);
-            exit(EXIT_FAILURE);
-        } else if (xc_res == 1) {
-            prints("Invalid: No such file or directory\n");
+        switch (xc_res) {
+            case -1:
+                free_str_array(tokens, tokc);
+                exit(EXIT_FAILURE);
+            case 1:
+                prints("Invalid: No such file or directory\n");
         }
     }
 
