@@ -1,6 +1,6 @@
 /* executil.h   --- Utility functions for executing processes ---  Kaan B Erdogmus, Belinda Liu,  CIS 380, kaanberk*/
 
-#include "ioutil.h" //for PROC_LIST
+#include "ioutil.h"  //for PROC_LIST
 
 #define FD int  //to differentiate between regular integers and file descriptors
 
@@ -20,6 +20,6 @@ int exec_procs(PROC_LIST * proc_list);
 //lists currently running jobs
 int jobs(/* EXEC_LIST */);
 
-int fg(/* EXEC_LIST */);
+int fg(int proc_id);
 
-int bg(/* EXEC_LIST */);
+int bg(int proc_id);

@@ -108,21 +108,25 @@ int tokenize_input(char * buf, char ** argv) {
     return tok_c;
 }
 
+/**
+ * frees an array of strings of length len
+ */
 void free_str_array(char ** argv, size_t len) {
     for (size_t i = 0; i < len; i++) {
         free(argv[i]);
     }
 }
 
-/* [r]edirect, [p]ipeline, [b]ackground check
- * returns 1 if s is "<", 2 if ">", 3 if "|", 4 if "&", 0 otherwise
+/**
+ * utility function for fg/bg parsing
+ * returns true if s points to a NULL-terminated integer string, false otherwise
  */
-int is_rpb(const char * s) {
-    if (streq(s, "<")) return 1;
-    if (streq(s, ">")) return 2;
-    if (streq(s, "|")) return 3;
-    if (streq(s, "&")) return 4;
-    return 0;
+int is_p_int(char * s) {
+    if (!*s) return 0;
+    while (*s) {
+        if (!(*s >= '0' && *s++ <= '9')) return 0;
+    }
+    return 1;
 }
 
 int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
@@ -218,4 +222,54 @@ int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
     } while (*++argv);
 
     return procc;
+}
+
+INPUT_T proc_list_from_input(PROC_LIST * proc_list, int * proc_id) {
+    char buf[RDLEN];
+
+    delete_proc_list(proc_list);
+    *proc_id = -1;
+
+    // if the readline is EOF or exit, return EXIT
+    // print a newline if readline is EOF
+    if ((!readln(buf) && (endl(), 1)) || streq(buf, "exit")) return EXIT;
+
+    if (streq(buf, "jobs")) return JOBS;
+
+    if (!(proc_list->tokc = tokenize_input(buf, proc_list->tokens))) return SKIP;  // if no lines entered, skip execution
+
+    if (proc_list->tokc == TOKMAX) free(proc_list->tokens[--(proc_list->tokc)]);  // edge case, must not have last token
+    proc_list->tokens[proc_list->tokc] = 0;                                       //tokens should be null terminated
+
+    //fg and bg expect an argument of the form "fg %x" or "fg x" where x is a positive integer
+
+    if (streq(proc_list->tokens[0], "fg")) {
+        if (proc_list->tokc != 2) return FAIL;
+        if (is_p_int(proc_list->tokens[1]) || (proc_list->tokens[1][0] == '%' && is_p_int(proc_list->tokens[1] + 1))) {
+            *proc_id = atoi(proc_list->tokens[1][0] == '%' ? proc_list->tokens[1] + 1 : proc_list->tokens[1]);
+            return FG;
+        } else {
+            return FAIL;
+        }
+    }
+
+    if (streq(proc_list->tokens[0], "bg")) {
+        if (proc_list->tokc != 2) return FAIL;
+        if (is_p_int(proc_list->tokens[1]) || (proc_list->tokens[1][0] == '%' && is_p_int(proc_list->tokens[1] + 1))) {
+            *proc_id = atoi(proc_list->tokens[1][0] == '%' ? proc_list->tokens[1] + 1 : proc_list->tokens[1]);
+            return BG;
+        } else {
+            return FAIL;
+        }
+    }
+
+    if (!parse_tokens(proc_list->tokc, proc_list->tokens, proc_list)) return FAIL;  //no valid process given, skip execution
+
+    return JOB;
+}
+
+void delete_proc_list(PROC_LIST * proc_list) {
+    free_str_array(proc_list->tokens, proc_list->tokc);
+    proc_list->procc = 0;
+    proc_list->tokc  = 0;
 }

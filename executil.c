@@ -77,12 +77,10 @@ int exec_procs(PROC_LIST * proc_list) {
     FD rd_out_fd = -1;  //redirect out file descriptor (STDOUT_FILENO by default)
 
     // open input and output redirect files
-    if (proc_list->input_redirect && (rd_in_fd = open(proc_list->input_redirect, O_RDONLY, 0644)) < 0) {
-        perror("Invalid: Unable to open input file");
+    if (proc_list->input_redirect && (rd_in_fd = open(proc_list->input_redirect, O_RDONLY, 0644)) < 0)
         return 2;
-    }
+
     if (proc_list->output_redirect && (rd_out_fd = open(proc_list->output_redirect, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0) {
-        perror("Invalid: Unable to open output file");
         close(rd_in_fd);
         return 2;
     }
@@ -120,15 +118,18 @@ int exec_procs(PROC_LIST * proc_list) {
     return 0;
 }
 
-
 int jobs(/* EXEC_LIST */) {
-    
+    return 0;
 }
 
-int fg(/* EXEC_LIST */) {
-    
+int fg(int proc_id) {
+    printi(proc_id);
+    endl();
+    return 0;
 }
 
-int bg(/* EXEC_LIST */) {
-    
+int bg(int proc_id) {
+    printi(proc_id);
+    endl();
+    return 0;
 }

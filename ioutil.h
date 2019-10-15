@@ -2,7 +2,7 @@
 #ifndef IOUTIL_H
 #define IOUTIL_H
 
-#include <stdio.h> //for the portable size_t datatype
+#include <stdio.h>  //for the portable size_t datatype
 
 #define ARGC 2       //expected maximum value of argc
 #define RDLEN 1024   //length of input to be read (including terminating character which becomes '\0')
@@ -21,24 +21,27 @@
 #undef readln
 
 typedef struct {
-    char * tokens[TOKMAX];i  // tokens parsed from input, only this contains allocated memory 
+    char * tokens[TOKMAX];  // tokens parsed from input, only this contains allocated memory
 
     char ** procs[PROCMAX];  //pointer to the argv of each process to be executed (argv[0] is proc name), proc[i] is pipelined to proc[i+1]
     char * input_redirect;   // if NULL, read from stdin
     char * output_redirect;  // if NULL, write to stdout
 
-    int procc;           //number of processes
+    int procc;           // number of processes
+    int tokc;            // number of tokens in tokens[]
     char is_background;  //1 if running the process in the background, 0 otherwise
 
 } PROC_LIST;
 
-enum INPUT_T {
-    JOB = 0,
-    EXIT = 1,
-    FG = 2,
-    BG = 3,
-    FAIL = -1
-}
+typedef enum {
+    JOB  = 0,  // valid job to be executed
+    EXIT = 1,  // EOF or "exit"
+    SKIP = 2,  // no lines entered, skip execution
+    JOBS = 3,  // requesting list of jobs
+    FG   = 4,  // foreground
+    BG   = 5,  // background
+    FAIL = -1  // parsing failed
+} INPUT_T;
 
 /* checks the arguments passed to main and parses the value of timeout */
 int check_args(int argc, const char ** argv);
@@ -83,18 +86,11 @@ int readln(char * buf);
  */
 int tokenize_input(char * buf, char ** argv);
 
-
 /**
  * reads the input line, tokenizes the input and parses it into proc_list if valid job
  * returns an INPUT_T based on the validity and type of input
 */
-INPUT_T proc_list_from_input(PROC_LIST * proc_list);
-
-
-/**
- * frees an array of strings of length len
- */
-void free_str_array(char ** argv, size_t len);
+INPUT_T proc_list_from_input(PROC_LIST * proc_list, int * proc_id);
 
 /* parses the tokens into an instance of proc_list
  * fills the array of processes pointed to by procs
@@ -104,5 +100,10 @@ void free_str_array(char ** argv, size_t len);
  * returns number of processes parsed or 0 if a parsing error occurred
  */
 int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list);
+
+/**
+ * frees the allocated memory in a proc_list instance
+ */
+void delete_proc_list(PROC_LIST * proc_list);
 
 #endif
