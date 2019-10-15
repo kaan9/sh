@@ -2,8 +2,6 @@
 #ifndef IOUTIL_H
 #define IOUTIL_H
 
-#include <stdio.h>  //for the portable size_t datatype
-
 #define ARGC 2       //expected maximum value of argc
 #define RDLEN 1024   //length of input to be read (including terminating character which becomes '\0')
 #define TOKMAX 512   //maximum number of tokens, this is currently safe with RDLEN = 1024
@@ -43,9 +41,6 @@ typedef enum {
     FAIL = -1  // parsing failed
 } INPUT_T;
 
-/* checks the arguments passed to main and parses the value of timeout */
-int check_args(int argc, const char ** argv);
-
 /* prints a character */
 void printc(char c);
 
@@ -70,36 +65,11 @@ int getchar();
 /* flushes input stream */
 void flush();
 
-/** reads a line of NULL-terminated input into buf 
- * reads at most RDLEN characters
- * returns length of read input
- * returns -1 if first char is EOF
- */
-int readln(char * buf);
-
-/** tokenizes a null terminated string buf of tokens delimiting
- * whitespace and separating '&', '|', '<', '>' tokens
- * makes at most TOKMAX tokens and points to them with argv
- * not in-place, each string in argv is malloc'd and must be freed
- * buf must be 0-terminated
- * returns number of tokens
- */
-int tokenize_input(char * buf, char ** argv);
-
 /**
  * reads the input line, tokenizes the input and parses it into proc_list if valid job
  * returns an INPUT_T based on the validity and type of input
 */
 INPUT_T proc_list_from_input(PROC_LIST * proc_list, int * proc_id);
-
-/* parses the tokens into an instance of proc_list
- * fills the array of processes pointed to by procs
- * fills at most PROCMAX processes
- * in-place, modifies proc_list, does not alloc
- * if an error occurs may return proc_list with corrupt data
- * returns number of processes parsed or 0 if a parsing error occurred
- */
-int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list);
 
 /**
  * frees the allocated memory in a proc_list instance

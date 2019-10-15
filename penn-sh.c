@@ -1,11 +1,6 @@
 /* penn-sh   ---  Kaan B Erdogmus, Belinda Liu,  CIS 380, kaanberk*/
-#include <errno.h>  //for errno
-#include <fcntl.h>
 #include <signal.h>
 #include <stdlib.h>  //for exit
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
 
 #include "executil.h"  //process execution utility functions
 #include "ioutil.h"    //functions for input/output, defines RDLEN, TOKMAX, PROCMAX
@@ -37,7 +32,7 @@ int main(int argc, const char ** argv) {
                         continue;
                     case 2:
                     default:
-                        perror("Invalid: Unable to open input/output file");
+                        prints("Invalid: Unable to open input/output file\n");
                         continue;
                 }
             case EXIT:

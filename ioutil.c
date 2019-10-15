@@ -3,13 +3,14 @@
 
 #include <errno.h>   //for errno
 #include <limits.h>  //for INT_MAX, INT_MIN (for portability)
-#include <stdio.h>   //for perror
+#include <stdio.h>   //for perror, size_t
 #include <stdlib.h>  //for exit
 #include <unistd.h>
 
 #include "strutil.h"
 #include "tokenizer.h"
 
+/* checks the arguments passed to main and parses the value of timeout */
 int check_args(int argc, const char ** argv) {
     int timeout = -1;  //default value of -1 indicates no timeout
 
@@ -83,6 +84,11 @@ void flush() {
         ;
 }
 
+/** reads a line of NULL-terminated input into buf 
+ * reads at most RDLEN characters
+ * returns length of read input
+ * returns -1 if first char is EOF
+ */
 int readln(char * buf) {
     int len = read(STDIN_FILENO, buf, RDLEN);
     if (!len) return 0;
@@ -95,6 +101,13 @@ int readln(char * buf) {
     return len;
 }
 
+/** tokenizes a null terminated string buf of tokens delimiting
+ * whitespace and separating '&', '|', '<', '>' tokens
+ * makes at most TOKMAX tokens and points to them with argv
+ * not in-place, each string in argv is malloc'd and must be freed
+ * buf must be 0-terminated
+ * returns number of tokens
+ */
 int tokenize_input(char * buf, char ** argv) {
     int tok_c             = 0;     //count of current token
     char * tok            = NULL;  //temp token
@@ -129,6 +142,13 @@ int is_p_int(char * s) {
     return 1;
 }
 
+/* parses the tokens into an instance of proc_list
+ * fills the array of processes pointed to by procs
+ * fills at most PROCMAX processes
+ * in-place, modifies proc_list, does not alloc
+ * if an error occurs may return proc_list with corrupt data
+ * returns number of processes parsed or 0 if a parsing error occurred
+ */
 int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
     int procc = 0;  //number of processes
 
