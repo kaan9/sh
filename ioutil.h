@@ -21,6 +21,8 @@
 #undef readln
 
 typedef struct {
+    char * tokens[TOKMAX];i  // tokens parsed from input, only this contains allocated memory 
+
     char ** procs[PROCMAX];  //pointer to the argv of each process to be executed (argv[0] is proc name), proc[i] is pipelined to proc[i+1]
     char * input_redirect;   // if NULL, read from stdin
     char * output_redirect;  // if NULL, write to stdout
@@ -29,6 +31,14 @@ typedef struct {
     char is_background;  //1 if running the process in the background, 0 otherwise
 
 } PROC_LIST;
+
+enum INPUT_T {
+    JOB = 0,
+    EXIT = 1,
+    FG = 2,
+    BG = 3,
+    FAIL = -1
+}
 
 /* checks the arguments passed to main and parses the value of timeout */
 int check_args(int argc, const char ** argv);
@@ -72,6 +82,14 @@ int readln(char * buf);
  * returns number of tokens
  */
 int tokenize_input(char * buf, char ** argv);
+
+
+/**
+ * reads the input line, tokenizes the input and parses it into proc_list if valid job
+ * returns an INPUT_T based on the validity and type of input
+*/
+INPUT_T proc_list_from_input(PROC_LIST * proc_list);
+
 
 /**
  * frees an array of strings of length len

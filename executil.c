@@ -119,3 +119,16 @@ int exec_procs(PROC_LIST * proc_list) {
 
     return 0;
 }
+
+
+int jobs(/* EXEC_LIST */) {
+    
+}
+
+int fg(/* EXEC_LIST */) {
+    
+}
+
+int bg(/* EXEC_LIST */) {
+    
+}

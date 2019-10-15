@@ -2,7 +2,6 @@
 #include <errno.h>  //for errno
 #include <fcntl.h>
 #include <signal.h>
-#include <stdio.h>   //for perror
 #include <stdlib.h>  //for exit
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -23,9 +22,11 @@ int main(int argc, const char ** argv) {
     char * tokens[TOKMAX];  //tokens parsed from input, only this contains allocated memory in main
     PROC_LIST proc_list;    //processes filtered from tokens
 
-    for (;;) {
+    while(1) {
         prints("penn-sh# ");
         if ((!readln(buf) && (endl(), 1)) || streq(buf, "exit")) break;  //break if the readln receives an EOF or "exit"
+
+	// add handlers for fg, bg, jobs; add a function to ioutil that reads the line and returns an enum with the tokenizer function, handle the result in main
 
         free_str_array(tokens, tokc);  //free previous allocations before having tokens point to new memory
 
