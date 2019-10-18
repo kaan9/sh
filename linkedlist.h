@@ -74,13 +74,13 @@ void * list_back(DEQUE * d);
 
 /* 
  * add a new value to the end of the DEQUE
- * returns the DEQUE or NULL if d or tail is NULL
+ * returns NULL if d is NULL
  */
 DEQUE * push_back(DEQUE * d, void * val);
 
 /* 
  * add a new value to the front of the DEQUE
- * returns the DEQUE or NULL if d or val is NULL
+ * returns NULL if d is NULL
  */
 DEQUE * push_front(DEQUE * d, void * val);
 
@@ -93,10 +93,48 @@ void * pop_front(DEQUE * d);
 /* gets the ith value in the DEQUE or NULL if out of bound */
 void * get(DEQUE * d, size_t i);
 
+/* note: indexed at 0, 
+ * returns node at position i
+ */
+struct node * traverse(struct node * n, size_t i);
+
+
+/* 
+ * note: indexed at 1, 
+ * replaces node's val with replace and returns old val
+ */
+void * replace(DEQUE * d, size_t i, void * replace);
+
 /* 
  * removes the node n from d and returns the val within
  * returns NULL if node invalid or d NULL
  */
 void * extract_node(DEQUE * d, struct node * n);
+
+/** 
+ * looks for a node with value val, extracts and 
+ *  returns 0 on success
+ *  returns -1 if d is null or d is corrupted (invalid deque)
+ *  returns 1 if val is not there (including if no elts in d)
+ */
+int remove_val(DEQUE * d, void * val);
+
+/* 
+ * ONLY for job linked list! looks for first node with val == NULL
+ * and replaces value with the input val, returns the position of
+ * the first node with val == NULL
+ * if no values are NULL< pushes to the back
+ * TO BE USED for assigning job ids 
+ * return -1 if d is NULL or invalid
+ */
+int insert(DEQUE * d, void * val);
+
+/**
+ *  calls the function mapper on each value in deque
+ *  and sets the vals to the return value of deque
+ *  returns NULL if d is null or d is corrupted (invalid deque)
+ *  returns d if successful
+ */
+DEQUE * map(DEQUE * d, void * (*mapper)(void *));
 
 #endif
