@@ -121,6 +121,10 @@ void * pop_front(DEQUE * d) {
     return ret;
 }
 
+/**
+ * note: indexed at 0, 
+ * returns node at position i
+ */
 struct node * traverse(struct node * n, size_t i) { 
     if (i <= 0 || !n) return n;
     return traverse(n->next, i - 1);
