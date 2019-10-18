@@ -35,6 +35,8 @@ int main(int argc, const char ** argv) {
     proc_list.tokc = 0;   // number of processes starts at 0
     int proc_id    = -1;  // id of process called with fg or bg
 
+    init_jobctrl();
+
     while (1) {
         
       /*  for (int i = 0; i < sp_procs; i++) {

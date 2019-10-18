@@ -13,11 +13,35 @@
 //functions for input/output, defines RDLEN, TOKMAX, PROCMAX
 #include "ioutil.h"
 #include "strutil.h"
+#include "linkedlist.h"
 
 // list of input and output file descriptors for each file
 // FD[i - 1][0] is read and FD[i - 1][1] is write for child #i
 // after forking, each child should close all other FDs
 FD fds[PROCMAX][2];
+
+// deleter function for a JOB
+int JOB_deleter(void * j) {
+    JOB * job = (JOB *) j;
+    free(job->name);
+    free(job->cpids);
+    free(job);
+    return 0;
+}
+
+int init_job_ctrl() {
+    return !(job_ctrl.jobs = make_empty_list(&JOB_deleter) && job_ctrl.created = make_empty_list(NULL)
+        && job_ctrl.stopped = make_empty_list(NULL));
+}
+
+// deletes the job control, deallocates created and stopped
+// goes through all jobs, frees the name and cpids, then frees the jobs
+// then frees the jobs, created, and stopped deques
+int delete_job_ctrl() {
+    delete_list(job_ctrl.jobs);
+    delete_list(job_ctrl.created);
+    delete_list(job_ctrl.stopped);
+}
 
 void kill_children(pid_t * children, int children_c, int SIG) {
     for (int i = 0; i < children_c; i++) kill(children[i], SIG);
@@ -147,7 +171,16 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
     return 0;
 }
 
-int jobs(/* EXEC_LIST */) {
+void * print_jobs(void * j) {
+    if (!j) return j;
+    JOB * job = (JOB *) j;
+    
+    
+    return j;
+}
+
+int jobs() {
+    
     return 0;
 }
 
