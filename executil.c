@@ -30,8 +30,8 @@ int JOB_deleter(void * j) {
 }
 
 int init_job_ctrl() {
-    return !(job_ctrl.jobs = make_empty_list(&JOB_deleter) && job_ctrl.created = make_empty_list(NULL)
-        && job_ctrl.stopped = make_empty_list(NULL));
+    return !((job_ctrl.jobs = make_empty_list(&JOB_deleter)) && (job_ctrl.created = make_empty_list(NULL))
+        && (job_ctrl.stopped = make_empty_list(NULL)));
 }
 
 // deletes the job control, deallocates created and stopped
@@ -41,11 +41,12 @@ int delete_job_ctrl() {
     delete_list(job_ctrl.jobs);
     delete_list(job_ctrl.created);
     delete_list(job_ctrl.stopped);
+    return 0;
 }
 
-void kill_children(pid_t * children, int children_c, int SIG) {
-    for (int i = 0; i < children_c; i++) kill(children[i], SIG);
-}
+//void kill_children(pid_t * children, int children_c, int SIG) {
+//    for (int i = 0; i < children_c; i++) kill(children[i], SIG);
+//}
 
 // close all file descriptor pairs in fds except for pair p
 void close_fds(int procc, int p) {
@@ -57,6 +58,61 @@ void close_fds(int procc, int p) {
     }
 }
 
+// stops a running job (because a process was stopped)
+// prints the proper stop message
+// returns 0 
+int stop_job(JOB * job) {
+    killpg(job->pgid, SIGTSTP);
+    tcsetpgrp(STDIN_FILENO, getpgid(0));
+    prints("Stopped: ");
+    prints(job->name);  
+    endl();
+    push_back(job_ctrl->stopped, (void *) job->job_id);
+    return 0;
+}
+
+// restarts a stopped (background) job int the foreground (because fg was inputted)
+// prints the proper restart message
+// returns 0 if job successfully removed from stopped jobs
+int restart_job(JOB * job) {
+    killpg(job->pgid, SIGCONT);
+    tcsetpgrp(STDIN_FILENO, job->pgid);
+    prints("Restarting: ");
+    prints(job->name);  
+    endl();
+    return remove_val(job_ctrl->stopped, (void *) job->job_id);
+}
+
+// (re)starts a (stopped background) job int the background (because bg was inputted, or background job is executed)
+// prints the proper restart message
+// returns 0 if jobs successfuly removed from stopped jobs, otherwise job_id was not in stopped jobs
+int run_job(JOB * job) {
+    killpg(job->pgid, SIGCONT);
+    tcsetpgrp(STDIN_FILENO, getpgid(0));
+    prints("Running: ");
+    prints(job->name);  
+    endl();
+    return remove_val(job_ctrl->stopped, (void *) job->job_id);
+}
+
+// bring running bg job to fg (because fg was inputted)
+// print only the name of the job
+// returns 0
+int bring_job_to_fg(JOB * job) {
+    tcsetpgrp(STDIN_FILENO, job->pgid);
+    prints(job->name);  
+    endl();
+    return 0;
+}
+
+// prints that job has finished and removes job from jobs, created, and stopped 
+// returns 0 on success
+int finished_job(JOB * job) {
+    prints("Finished: ");
+    prints(job->name);
+    endl();
+    remove_val(job_ctrl->created, (void *) job->job_id);
+}
 
 // execute a single process
 pid_t exec_proc(char ** argv, int procc, int i) {
@@ -79,12 +135,11 @@ pid_t exec_proc(char ** argv, int procc, int i) {
     }
 }
 
-int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
+int exec_procs(PROC_LIST * proc_list, int * fg_pgid) {
     if (!proc_list || !proc_list->procc) return 1;
 
     int procc = proc_list->procc; //for quick access
 
-    int sp_procs = 0;      //count of spawned processes
     pid_t cpids[PROCMAX];  //pids of the spawned processes
 
     int pgid = 0; // PGID of all processes of the job, the first processes's PID is given to the PGID 
@@ -95,12 +150,13 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
 
     // open input and output redirect files
     if (proc_list->input_redirect && (fds[0][0] = open(proc_list->input_redirect, O_RDONLY, 0644)) < 0) {
-        return 2;
+        return FILE_IO_ERROR;
     }
 
-    if (proc_list->output_redirect && (fds[procc - 1][1] = open(proc_list->output_redirect, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0) {
+    if (proc_list->output_redirect && (fds[procc - 1][1] = open(proc_list->output_redirect, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0)
+    {
         close(fds[0][0]);
-        return 2;
+        return FILE_IO_ERROR;
     }
 
     // open n - 1 pipes
@@ -117,8 +173,8 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
 
     // loop through and execute all processes
     for (int i = 0; i < procc; i++) {
-        if ((cpids[sp_procs++] = exec_proc(proc_list->procs[i], procc, i)) == -1) {
-            kill_children(cpids, sp_procs - 1, SIGKILL);
+        if ((cpids[i] = exec_proc(proc_list->procs[i], procc, i)) == -1) {
+            kill_children(cpids, i, SIGKILL);
             return EXEC_ERR;
         }
         
@@ -126,12 +182,16 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
         
         if (setpgid(cpids[i], pgid)) {
             perror("Invalid: setpgid failed");
-            kill_children(cpids, i + 1, SIGKILL);
+            kill_children(cpids, i, SIGKILL);
             return CRITICAL;
         }
     }
 
     close_fds(procc, -1);
+
+    JOB * new_job = init_job(proc_list->buf, proc_list->cpids, procc, pgid);
+    new_job->job_id = insert_val(job_ctrl->jobs, new_job);
+    push_back(job_ctrl->created, (void *) new_job->job_id);
 
     if (proc_list->is_background) {
         tcsetpgrp(STDIN_FILENO, getpgid(0));
@@ -143,12 +203,12 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
     //if a child is stopped, stop the entire process
     int alive_c = !proc_list->is_background ? sp_procs : 0;
     while (alive_c) {
-        for (int i = 0; (i < sp_procs) && alive_c; i++) {
+        for (int i = 0; (i < procc) && alive_c; i++) {
             if (cpids[i]) {
                 int wstatus = 0, w = 0;
                 if ((w = waitpid(cpids[i], &wstatus, WUNTRACED | WNOHANG)) == -1) {
                     perror("Invalid: waitpid");
-                    kill_children(cpids, sp_procs, SIGKILL); // kill job if waiting fails
+                    kill_children(cpids, sp_procs, SIGKILL); // kill job if waiting failsi
                     return CRITICAL;
                 } else if (w) {
                     if (WIFEXITED(wstatus)) {
@@ -159,14 +219,14 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
                         alive_c--;
                     } else if (WIFSTOPPED(wstatus)) {
                         // if any process is stopped, stop all processes in job
-                        prints("");
-                        kill_children(cpids, sp_procs, SIGSTOP);
+                        stop_job(job);
                         alive_c = 0;
                     }
                 }
             }
         }
     }
+    new_job = NULL; //fg back to terminal
     tcsetpgrp(STDIN_FILENO, getpgid(0));
     return 0;
 }
@@ -174,7 +234,7 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
 void * print_jobs(void * j) {
     if (!j) return j;
     JOB * job = (JOB *) j;
-    
+     
     
     return j;
 }

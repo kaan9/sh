@@ -6,23 +6,27 @@
 #include "ioutil.h"    //functions for input/output, defines RDLEN, TOKMAX, PROCMAX
 #include "strutil.h"   //string utlity functions
 
-FD fg_pgid = 0;
 
 void siginthandler(int signum) {
-    if (fg_pgid) {
-        kill(fg_pgid, SIGINT);
-        fg_pgid = 0;
+    if (fg_job) {
+        killpg(fg_job->pgid, SIGINT);
+        fg_job = NULL;
     }
 }
 
 void sigtstophandler(int signum) {
-    if (fg_pgid) {
-        killpg(fg_pgid, SIGTSTP);
-        fg_pgid = 0;
+    if (fg_job) {
+        stop_job(fg_job);
+        fg_job = NULL;
     }
 }
 
 void sigtermhandler(int signum) {}
+
+void free_memory(PROC_LIST * proc_list) {
+    delete_proc_list(proc_list);
+    delete_job_ctrl();
+}
 
 int main(int argc, const char ** argv) {
     signal(SIGINT, siginthandler);
@@ -69,21 +73,21 @@ int main(int argc, const char ** argv) {
             case VJOB:
                 switch (exec_procs(&proc_list, &fg_pgid)) {
                     case CRITICAL:  //critical
-                        delete_proc_list(&proc_list);
+                        free_memory(&proc_list);
                         prints("Invalid: Critical");
                         exit(EXIT_FAILURE);
                     case OK:
                         continue;
                     case EXEC_ERR:
                         prints("Invalid: No such file or directory\n");
-                        delete_proc_list(&proc_list);
+                        free_memory(&proc_list);
                         exit(EXIT_FAILURE);
                     case FILE_IO_ERR:
                         prints("Invalid: Unable to open input/output file\n");
                         continue;
                 }
             case EXIT:
-                delete_proc_list(&proc_list);
+                free_memory(&proc_list);
                 exit(EXIT_SUCCESS);
             case SKIP:
                 continue;
@@ -102,7 +106,6 @@ int main(int argc, const char ** argv) {
                 continue;
         }
     }
-
-    delete_proc_list(&proc_list);
+    free_memory(&proc_list);
     exit(EXIT_SUCCESS);
 }

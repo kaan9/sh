@@ -11,8 +11,8 @@ typedef enum {
 
 typedef struct {
     char * name; //malloced
-    int * cpids; //malloced
-    int cpidc;
+    pid_t * cpids; //malloced
+    int procc;
     int pgid;
     int job_id; 
 } JOB;
@@ -23,6 +23,8 @@ struct JOB_CTRL {
    DEQUE * stopped;
 } job_ctrl;
 
+JOB * fg_job = NULL; //persistent foreground job, NULL indicates no job in the foreground
+
 // initializes the job control with empty deques and a job deleter function for job_ctrl->jobs
 // returns 0 on success and 1 on failure 
 int init_job_ctrl();
@@ -32,12 +34,14 @@ int init_job_ctrl();
 // then frees the jobs, created, and stopped deques
 int delete_job_ctrl();
 
-// initializes a (malloced) job with name, cpids, pgid, and the job id
-//
-JOB * init_job(char * name, int * cpids, int cpidc, int pgid, int job_id);
+// initializes a (malloced) job with name, cpids, pgid
+// copies the name, cpids into malloced memory
+// job_id is set to -1 initially
+// returns the created job or NULL if invalid input
+JOB * init_job(char * name, int * cpids, int cpidc, int pgid);
 
-//executes processes, returns 0 on success, 1 on invalid input, -1 for a critical fork/exec failure, 2 if I/O fails
-int exec_procs(PROC_LIST * proc_list, FD * fg_pgid);
+//executes processes, returns OK on success, 1 on invalid input, -1 for a critical fork/exec failure, 2 if I/O fails
+int exec_procs(PROC_LIST * proc_list, int * fg_pgid);
 
 //lists currently running jobs
 int jobs();
@@ -46,4 +50,3 @@ int fg(int proc_id);
 
 int bg(int proc_id);
 
-//int poll_;

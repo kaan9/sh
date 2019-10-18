@@ -112,7 +112,7 @@ void * replace(DEQUE * d, size_t i, void * replace);
 void * extract_node(DEQUE * d, struct node * n);
 
 /** 
- * looks for a node with value val, extracts and 
+ * looks for a node with value val, extracts and deletes it 
  *  returns 0 on success
  *  returns -1 if d is null or d is corrupted (invalid deque)
  *  returns 1 if val is not there (including if no elts in d)

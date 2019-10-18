@@ -261,7 +261,7 @@ INPUT_T proc_list_from_input(PROC_LIST * proc_list, int * proc_id) {
     for (i = 0; buf[i] && buf[i] != '&'; i++) {
         proc_list->buf[i] = buf[i];
     }
-    buf[i] = NULL;
+    buf[i] = 0;
 
     if (!(proc_list->tokc = tokenize_input(buf, proc_list->tokens))) return SKIP;  // if no lines entered, skip execution
 
@@ -296,14 +296,9 @@ INPUT_T proc_list_from_input(PROC_LIST * proc_list, int * proc_id) {
 }
 
 void delete_proc_list(PROC_LIST * proc_list) {
+
     free_str_array(proc_list->tokens, proc_list->tokc);
     proc_list->procc = 0;
     proc_list->tokc  = 0;
 }
 
-
-void print_job(PROC_LIST * proc_list) {
-    for (int i = 0; i < proc_list->procc; i++) {
-        
-    }
-}
