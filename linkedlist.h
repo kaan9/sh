@@ -28,6 +28,7 @@ typedef struct {
     struct node * head;
     struct node * tail;
     int (*dealloc)(void *);
+    int size;
 } DEQUE;
 
 /* 
@@ -44,6 +45,9 @@ typedef struct {
  * function for deallocation
  * returns NULL if val is NULL or malloc failed
  */
+
+DEQUE * make_empty_list(int (*deleter)(void *));
+
 DEQUE * make_list(void * val, int (*deleter)(void *));
 
 /* 
