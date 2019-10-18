@@ -120,16 +120,25 @@ void * pop_front(DEQUE * d) {
     return ret;
 }
 
-struct node * traverse(struct node * n, size_t i) {
+struct node * traverse(struct node * n, size_t i) { 
     if (i <= 0 || !n) return n;
     return traverse(n->next, i - 1);
 }
 
 void * get(DEQUE * d, size_t i) {
-    if (!d || i < 0) return NULL;
+    if (!d || i <= 0) return NULL;
 
-    struct node * node_i = traverse(d->head, i);
+    struct node * node_i = traverse(d->head, i - 1);
     return node_i ? node_i->val : NULL;
+}
+
+void * replace(DEQUE * d, size_t i, void * replace) {
+    if (!d || i <= 0 || d->size < i) return NULL;
+
+    struct node * n = NULL;
+    void * ret = (n = traverse(d->head, i - 1) ? n->val : NULL);
+    n->val = replace;
+    return ret;
 }
 
 void * extract_node(DEQUE * d, struct node * n) {
@@ -151,4 +160,51 @@ void * extract_node(DEQUE * d, struct node * n) {
         d->size--;
         return ret;
     }
+}
+
+int remove_val(DEQUE * d, void * val) {
+    if (!d) return -1;
+    if (!d->head && !d->tail)  return 1;
+    if (!d->head || !d->tail)  return -1;
+    
+    struct node * curr = d->head;
+
+    while(curr) {
+        if (curr->val == val) {
+            extract_node(d, curr);
+            return 0;
+        }
+        curr = curr->next;
+    }
+    return 1;
+}
+
+int insert(DEQUE * d, void * val) {
+    if (!d) return -1;
+    if (!d->head ^ !d->tail) return -1;
+    if (d->size == 0) { //no jobs ever created yet
+        push_front(d, val);
+        return 1;
+    }
+    int i = 1;
+    for (struct node * curr = d->head; curr; curr = curr->next, i++) {
+        if (!curr->val) {
+            curr->val = val;
+            return i;
+        }
+    }
+    push_back(d, val);
+    return i + 1;
+}
+
+DEQUE * map(DEQUE * d, void * (*mapper)(void *)) {
+    if (!d) return NULL;
+    if (!d->head ^ !d->tail) return NULL;
+    if (!d->head && !d->tail) return d;
+    struct node * curr = d->head;
+    while (curr) {
+        curr->val = mapper(curr->val);
+        curr = curr->next;
+    }
+    return d;
 }
