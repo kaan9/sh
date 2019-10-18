@@ -42,6 +42,7 @@ int delete_list(DEQUE * d) {
         free(curr);
         curr = tmp;
     }
+    free(d);
     return success;  //return the total of vals returned by the deallocator, should be 0
 }
 
@@ -171,7 +172,7 @@ int remove_val(DEQUE * d, void * val) {
 
     while(curr) {
         if (curr->val == val) {
-            extract_node(d, curr);
+            d->dealloc(extract_node(d, curr));
             return 0;
         }
         curr = curr->next;
