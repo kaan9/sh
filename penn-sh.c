@@ -22,16 +22,16 @@ int main(int argc, const char ** argv) {
         switch (proc_list_from_input(&proc_list, &proc_id)) {
             case JOB:
                 switch (exec_procs(&proc_list)) {
-                    case -1:  //critical
+                    case CRITICAL:  //critical
                         delete_proc_list(&proc_list);
+                        prints("Invalid: Critical");
                         exit(EXIT_FAILURE);
-                    case 0:
+                    case OK:
                         continue;
-                    case 1:
+                    case EXEC_ERR:
                         prints("Invalid: No such file or directory\n");
                         continue;
-                    case 2:
-                    default:
+                    case FILE_IO_ERR:
                         prints("Invalid: Unable to open input/output file\n");
                         continue;
                 }
