@@ -50,7 +50,7 @@ DEQUE * make_empty_list(int (*deleter)(void *));
 
 DEQUE * make_list(void * val, int (*deleter)(void *));
 
-/* 
+/** 
  * delete the DEQUE by first calling the deallocate function in the DEQUE on the values,
  * then free the nodes and the DEQUE
  * if deealloc is NULL, does not automatically deallocate the values pointed to
@@ -60,19 +60,19 @@ DEQUE * make_list(void * val, int (*deleter)(void *));
  */
 int delete_list(DEQUE * d);
 
-/* 
+/** 
  * return the value stored at the front of the DEQUE 
  * returns NULL if d is NULL or the head is NULL
  */
 void * list_front(DEQUE * d);
 
-/* 
+/** 
  * return the value stored at the front of the DEQUE
  * returns NULL if d is NULL or the head is NULL
  */
 void * list_back(DEQUE * d);
 
-/* 
+/** 
  * add a new value to the end of the DEQUE
  * returns NULL if d is NULL
  */
@@ -93,19 +93,13 @@ void * pop_front(DEQUE * d);
 /* gets the ith value in the DEQUE or NULL if out of bound */
 void * get(DEQUE * d, size_t i);
 
-/* note: indexed at 0, 
- * returns node at position i
- */
-struct node * traverse(struct node * n, size_t i);
-
-
-/* 
+/** 
  * note: indexed at 1, 
  * replaces node's val with replace and returns old val
  */
 void * replace(DEQUE * d, size_t i, void * replace);
 
-/* 
+/** 
  * removes the node n from d and returns the val within
  * returns NULL if node invalid or d NULL
  */
@@ -119,7 +113,7 @@ void * extract_node(DEQUE * d, struct node * n);
  */
 int remove_val(DEQUE * d, void * val);
 
-/* 
+/** 
  * ONLY for job linked list! looks for first node with val == NULL
  * and replaces value with the input val, returns the position of
  * the first node with val == NULL
@@ -127,7 +121,7 @@ int remove_val(DEQUE * d, void * val);
  * TO BE USED for assigning job ids 
  * return -1 if d is NULL or invalid
  */
-int insert(DEQUE * d, void * val);
+int insert_val(DEQUE * d, void * val);
 
 /**
  *  calls the function mapper on each value in deque
