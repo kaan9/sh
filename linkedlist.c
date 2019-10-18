@@ -4,9 +4,9 @@
  */
 #include "linkedlist.h"
 
-const deque * make_list(void * val, int (*deleter)(void *)) {
-    if (!val) return NULL;  //NULL values not allowed in deque
-    deque * d = malloc(sizeof(deque));
+DEQUE * make_list(void * val, int (*deleter)(void *)) {
+    if (!val) return NULL;  //NULL values not allowed in DEQUE
+    DEQUE * d = malloc(sizeof(DEQUE));
     if (!d) return NULL;  //if malloc fails, return NULL
     d->dealloc = deleter;
     d->tail = d->head = malloc(sizeof(struct node));
@@ -19,8 +19,7 @@ const deque * make_list(void * val, int (*deleter)(void *)) {
     return d;
 }
 
-int delete_list(const deque * deq) {
-    deque * d = (deque *)deq;  //remove the const
+int delete_list(DEQUE * d) {
     if (!d) return -1;
 
     int success        = 0;
@@ -34,19 +33,16 @@ int delete_list(const deque * deq) {
     return success;  //return the total of vals returned by the deallocator, should be 0
 }
 
-void * list_front(const deque * deq) {
-    deque * d = (deque *)deq;  //remove the const
+void * list_front(DEQUE * d) {
     return d && d->head ? d->head->val : NULL;
 }
 
-void * list_back(const deque * deq) {
-    deque * d = (deque *)deq;  //remove the const
+void * list_back(DEQUE * d) {
     return d && d->tail ? d->tail->val : NULL;
 }
 
-const deque * push_back(const deque * deq, void * val) {
-    deque * d = (deque *)deq;  //remove the const
-    if (!val || !d) return d;  //null values not allowed in deque
+DEQUE * push_back(DEQUE * d, void * val) {
+    if (!val || !d) return d;  //null values not allowed in DEQUE
 
     struct node * tmp = malloc(sizeof(struct node));
     if (!tmp) return NULL;
@@ -57,9 +53,8 @@ const deque * push_back(const deque * deq, void * val) {
     return d;
 }
 
-const deque * push_front(const deque * deq, void * val) {
-    deque * d = (deque *)deq;  //remove the const
-    if (!val || !d) return d;  //null values not allowed in deque
+DEQUE * push_front(DEQUE * d, void * val) {
+    if (!val || !d) return d;  //null values not allowed in DEQUE
 
     struct node * tmp = malloc(sizeof(struct node));
     if (!tmp) return NULL;
@@ -70,8 +65,7 @@ const deque * push_front(const deque * deq, void * val) {
     return d;
 }
 
-void * pop_back(const deque * deq) {
-    deque * d = (deque *)deq;  //remove the const
+void * pop_back(DEQUE * d) {
     if (!d) return NULL;       //invalid input
 
     struct node * tmp = d->tail;
@@ -80,13 +74,12 @@ void * pop_back(const deque * deq) {
     void * val = tmp->val;
     free(tmp);
 
-    if (!d->tail) free(d);  //if no elements left in deque, destroy deque
+    if (!d->tail) free(d);  //if no elements left in DEQUE, destroy DEQUE
     else d->tail->next = NULL;
     return val;
 }
 
-void * pop_front(const deque * deq) {
-    deque * d = (deque *)deq;  //remove the const
+void * pop_front(DEQUE * d) {
     if (!d) return NULL;       //invalid input
 
     struct node * tmp = d->head;
@@ -94,7 +87,7 @@ void * pop_front(const deque * deq) {
     void * val        = tmp->val;
     free(tmp);
 
-    if (!d->head) free(d);  //if no elements left in deque, destroy deque
+    if (!d->head) free(d);  //if no elements left in DEQUE, destroy DEQUE
     else d->head->prev = NULL;
     return val;
 }
@@ -104,10 +97,23 @@ struct node * traverse(struct node * n, size_t i) {
     return traverse(n->next, i - 1);
 }
 
-void * get(const deque * deq, size_t i) {
-    deque * d = (deque *)deq;  //remove the const
+void * get(DEQUE * d, size_t i) {
     if (!d || i < 0) return NULL;
 
     struct node * node_i = traverse(d->head, i);
     return node_i ? node_i->val : NULL;
+}
+
+void * extract_node(DEQUE * d, struct node * n) {
+    if (!d || !n || !d->head || !d->tail) return NULL;
+    if (d->head == n) return pop_front(d);
+    if (d->tail == n) return pop_back(d);
+
+    void * val = n->val;
+    struct node * prev = n->prev;
+    struct node * next = n->next;
+    free(n);
+    prev->next = next;
+    next->prev = prev;
+    return val;
 }

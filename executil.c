@@ -110,7 +110,11 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
 
     close_fds(procc, -1);
 
+    if (proc_list->is_background) tcsetpgrp(STDIN_FILENO, getpgid(0));
+
     //wait for all children
+    
+    if (!proc_list->is_background)
     for (int i = 0; i < sp_procs; i++) {
         int status = 0;
         wait(&status);

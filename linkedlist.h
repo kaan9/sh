@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* a deque is a struct that has pointers to the head, tail of the linked list and a pointer
+/* a DEQUE is a struct that has pointers to the head, tail of the linked list and a pointer
  * to a deallocator function that is called on all void * vals when the list is deleted
  * the deallocator can be NULL in which case no automatic deletion happens
  * As a form of abstraction, all basic operations can be performed by passing a pointer
- * a deque into relevant functions in the header
+ * a DEQUE into relevant functions in the header
  * O(1) for all operations except get(i) which is O(n)
  */
 
@@ -28,65 +28,71 @@ typedef struct {
     struct node * head;
     struct node * tail;
     int (*dealloc)(void *);
-} deque;
+} DEQUE;
 
 /* 
- * any operations that would make a deque empty deallocate the deque and set the pointer to deque
+ * any operations that would make a DEQUE empty deallocate the DEQUE and set the pointer to DEQUE
  * to NULL
- * this abstraction is memory-safe as long as only the classes in the header interact with deque
- * and the deque is deleted through delete_list (or by emptying it out)
- * all deque instances returned or passed are declared const to prevent modification outside of
+ * this abstraction is memory-safe as long as only the classes in the header interact with DEQUE
+ * and the DEQUE is deleted through delete_list (or by emptying it out)
+ * all DEQUE instances returned or passed are declared const to prevent modification outside of
  * the class
  */
 
 /* 
- * make a new deque struct with one node containing the value NULL and an optional deleter
+ * make a new DEQUE struct with one node containing the value NULL and an optional deleter
  * function for deallocation
  * returns NULL if val is NULL or malloc failed
  */
-const deque * make_list(void * val, int (*deleter)(void *));
+DEQUE * make_list(void * val, int (*deleter)(void *));
 
 /* 
- * delete the deque by first calling the deallocate function in the deque on the values,
- * then free the nodes and the deque
+ * delete the DEQUE by first calling the deallocate function in the DEQUE on the values,
+ * then free the nodes and the DEQUE
  * if deealloc is NULL, does not automatically deallocate the values pointed to
  * returns the sum of the values returned by the deallocator function on the values
  * return value should be 0 if all deallocation succeeded
  * return value -1 if d is NULL
  */
-int delete_list(const deque * d);
+int delete_list(DEQUE * d);
 
 /* 
- * return the value stored at the front of the deque 
+ * return the value stored at the front of the DEQUE 
  * returns NULL if d is NULL or the head is NULL
  */
-void * list_front(const deque * d);
+void * list_front(DEQUE * d);
 
 /* 
- * return the value stored at the front of the deque
+ * return the value stored at the front of the DEQUE
  * returns NULL if d is NULL or the head is NULL
  */
-void * list_back(const deque * d);
+void * list_back(DEQUE * d);
 
 /* 
- * add a new value to the end of the deque
- * returns the deque or NULL if d or tail is NULL
+ * add a new value to the end of the DEQUE
+ * returns the DEQUE or NULL if d or tail is NULL
  */
-const deque * push_back(const deque * d, void * val);
+DEQUE * push_back(DEQUE * d, void * val);
 
 /* 
- * add a new value to the front of the deque
- * returns the deque or NULL if d or val is NULL
+ * add a new value to the front of the DEQUE
+ * returns the DEQUE or NULL if d or val is NULL
  */
-const deque * push_front(const deque * d, void * val);
+DEQUE * push_front(DEQUE * d, void * val);
 
-/* return and pop the value at the end of the deque */
-void * pop_back(const deque * d);
+/* return and pop the value at the end of the DEQUE */
+void * pop_back(DEQUE * d);
 
-/* return and pop the value at the front of the deque */
-void * pop_front(const deque * d);
+/* return and pop the value at the front of the DEQUE */
+void * pop_front(DEQUE * d);
 
-/* gets the ith value in the deque or NULL if out of bound */
-void * get(const deque * d, size_t i);
+/* gets the ith value in the DEQUE or NULL if out of bound */
+void * get(DEQUE * d, size_t i);
+
+/* 
+ * removes the node n from d and returns the val within
+ * returns NULL if node invalid or d NULL
+ */
+void * extract_node(DEQUE * d, struct node * n);
 
 #endif
