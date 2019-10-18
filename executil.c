@@ -136,6 +136,7 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
                         alive_c--;
                     } else if (WIFSTOPPED(wstatus)) {
                         // if any process is stopped, stop all processes in job
+                        prints("");
                         kill_children(cpids, sp_procs, SIGSTOP);
                         alive_c = 0;
                     }

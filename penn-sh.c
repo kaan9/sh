@@ -9,9 +9,6 @@
 FD fg_pgid = 0;
 
 void siginthandler(int signum) {
-    prints("int on : ");
-    printi(fg_pgid);
-    endl();
     if (fg_pgid) {
         kill(fg_pgid, SIGINT);
         fg_pgid = 0;
@@ -39,6 +36,31 @@ int main(int argc, const char ** argv) {
     int proc_id    = -1;  // id of process called with fg or bg
 
     while (1) {
+        
+      /*  for (int i = 0; i < sp_procs; i++) {
+            if (cpids[i]) {
+                int wstatus = 0, w = 0;
+                if ((w = waitpid(cpids[i], &wstatus, WUNTRACED | WNOHANG)) == -1) {
+                    perror("Invalid: waitpid");
+                    kill_children(cpids, sp_procs, SIGKILL); // kill job if waiting fails
+                    return CRITICAL;
+                } else if (w) {
+                    if (WIFEXITED(wstatus)) {
+                        cpids[i] = 0;
+                        alive_c--;
+                    } else if (WIFSIGNALED(wstatus)) {
+                        cpids[i] = 0;
+                        alive_c--;
+                    } else if (WIFSTOPPED(wstatus)) {
+                        // if any process is stopped, stop all processes in job
+                        kill_children(cpids, sp_procs, SIGSTOP);
+                        alive_c = 0;
+                    }
+                }
+            }
+        }
+*/
+
         prints("penn-sh# ");
 
         switch (proc_list_from_input(&proc_list, &proc_id)) {
