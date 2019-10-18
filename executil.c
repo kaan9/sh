@@ -19,8 +19,8 @@
 // after forking, each child should close all other FDs
 FD fds[PROCMAX][2];
 
-void kill_children(pid_t * children, int children_c) {
-    for (int i = 0; i < children_c; i++) kill(children[i], SIGKILL);
+void kill_children(pid_t * children, int children_c, int SIG) {
+    for (int i = 0; i < children_c; i++) kill(children[i], SIG);
 }
 
 // close all file descriptor pairs in fds except for pair p
@@ -95,7 +95,7 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
     // loop through and execute all processes
     for (int i = 0; i < procc; i++) {
         if ((cpids[sp_procs++] = exec_proc(proc_list->procs[i], procc, i)) == -1) {
-            kill_children(cpids, sp_procs);
+            kill_children(cpids, sp_procs, SIGKILL);
             return CRITICAL;
         }
         
@@ -103,22 +103,48 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
         
         if (setpgid(cpids[i], pgid)) {
             perror("Invalid: setpgid failed");
-            kill_children(cpids, i + 1);
+            kill_children(cpids, i + 1, SIGKILL);
             return CRITICAL;
         }
     }
 
     close_fds(procc, -1);
 
-    if (proc_list->is_background) tcsetpgrp(STDIN_FILENO, getpgid(0));
-
-    //wait for all children
-    
-    if (!proc_list->is_background)
-    for (int i = 0; i < sp_procs; i++) {
-        int status = 0;
-        wait(&status);
+    if (proc_list->is_background) {
+        tcsetpgrp(STDIN_FILENO, getpgid(0));
+    } else {
+        tcsetpgrp(STDIN_FILENO, pgid);
     }
+
+    //wait for all children in foreground
+    //if a child is stopped, stop the entire process
+    int alive_c = !proc_list->is_background ? sp_procs : 0;
+    while (alive_c) {
+        for (int i = 0; (i < sp_procs) && alive_c; i++) {
+            if (cpids[i]) {
+                int wstatus = 0, w = 0;
+                if ((w = waitpid(cpids[i], &wstatus, WUNTRACED | WNOHANG)) == -1) {
+                    perror("Invalid: waitpid");
+                    kill_children(cpids, sp_procs, SIGKILL); // kill job if waiting fails
+                    return CRITICAL;
+                } else if (w) {
+                    if (WIFEXITED(wstatus)) {
+                        cpids[i] = 0;
+                        alive_c--;
+                    } else if (WIFSIGNALED(wstatus)) {
+                        cpids[i] = 0;
+                        alive_c--;
+                    } else if (WIFSTOPPED(wstatus)) {
+                        // if any process is stopped, stop all processes in job
+                        prints("");
+                        kill_children(cpids, sp_procs, SIGSTOP);
+                        alive_c = 0;
+                    }
+                }
+            }
+        }
+    }
+    tcsetpgrp(STDIN_FILENO, getpgid(0));
     return 0;
 }
 

@@ -19,6 +19,8 @@
 #undef readln
 
 typedef struct {
+    char buf[RDLEN];
+
     char * tokens[TOKMAX];  // tokens parsed from input, only this contains allocated memory
 
     char ** procs[PROCMAX];  //pointer to the argv of each process to be executed (argv[0] is proc name), proc[i] is pipelined to proc[i+1]
@@ -75,5 +77,10 @@ INPUT_T proc_list_from_input(PROC_LIST * proc_list, int * proc_id);
  * frees the allocated memory in a proc_list instance
  */
 void delete_proc_list(PROC_LIST * proc_list);
+
+/**
+ * prints the entire job in a proc_list without the &
+ */
+void print_job(PROC_LIST * proc_list);
 
 #endif

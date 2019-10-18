@@ -245,7 +245,7 @@ int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
 }
 
 INPUT_T proc_list_from_input(PROC_LIST * proc_list, int * proc_id) {
-    char buf[RDLEN];
+    char * buf = (char *) proc_list->buf;
 
     delete_proc_list(proc_list);
     *proc_id = -1;
@@ -292,4 +292,11 @@ void delete_proc_list(PROC_LIST * proc_list) {
     free_str_array(proc_list->tokens, proc_list->tokc);
     proc_list->procc = 0;
     proc_list->tokc  = 0;
+}
+
+
+void print_job(PROC_LIST * proc_list) {
+    for (int i = 0; i < proc_list->procc; i++) {
+        
+    }
 }
