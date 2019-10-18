@@ -31,28 +31,53 @@ typedef struct {
 } deque;
 
 /* 
- * any operations that would make a deque empty deallocate the deque and set the pointer to deque to NULL
- * this abstraction is memory-safe as long as only the classes in the header interact with deque and the deque
- * is deleted through delete_list (or by emptying it out)
- * all deque instances returned or passed are declared const to prevent modification outside of the class
+ * any operations that would make a deque empty deallocate the deque and set the pointer to deque
+ * to NULL
+ * this abstraction is memory-safe as long as only the classes in the header interact with deque
+ * and the deque is deleted through delete_list (or by emptying it out)
+ * all deque instances returned or passed are declared const to prevent modification outside of
+ * the class
  */
 
-/* make a new deque struct with one node containing the value NULL and an optional deleter function for deallocation */
+/* 
+ * make a new deque struct with one node containing the value NULL and an optional deleter
+ * function for deallocation
+ * returns NULL if val is NULL or malloc failed
+ */
 const deque * make_list(void * val, int (*deleter)(void *));
 
-/* delete the deque by first calling the deallocate function in the deque on the values, then free the nodes and the deque */
+/* 
+ * delete the deque by first calling the deallocate function in the deque on the values,
+ * then free the nodes and the deque
+ * if deealloc is NULL, does not automatically deallocate the values pointed to
+ * returns the sum of the values returned by the deallocator function on the values
+ * return value should be 0 if all deallocation succeeded
+ * return value -1 if d is NULL
+ */
 int delete_list(const deque * d);
 
-/* return the value stored at the front of the deque */
+/* 
+ * return the value stored at the front of the deque 
+ * returns NULL if d is NULL or the head is NULL
+ */
 void * list_front(const deque * d);
 
-/* return the value stored at the front of the deque */
+/* 
+ * return the value stored at the front of the deque
+ * returns NULL if d is NULL or the head is NULL
+ */
 void * list_back(const deque * d);
 
-/* add a new value to the end of the deque */
+/* 
+ * add a new value to the end of the deque
+ * returns the deque or NULL if d or tail is NULL
+ */
 const deque * push_back(const deque * d, void * val);
 
-/* add a new value to the front of the deque */
+/* 
+ * add a new value to the front of the deque
+ * returns the deque or NULL if d or val is NULL
+ */
 const deque * push_front(const deque * d, void * val);
 
 /* return and pop the value at the end of the deque */
