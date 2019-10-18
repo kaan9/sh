@@ -9,7 +9,7 @@ typedef enum {
 } EXEC_STATUS;
 
 //executes processes, returns 0 on success, 1 on invalid input, -1 for a critical fork/exec failure, 2 if I/O fails
-int exec_procs(PROC_LIST * proc_list);
+int exec_procs(PROC_LIST * proc_list, FD * fg_pgid);
 
 //lists currently running jobs
 int jobs(/* EXEC_LIST */);

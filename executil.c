@@ -41,11 +41,11 @@ pid_t exec_proc(char ** argv, int procc, int i) {
         perror("Invalid: fork failed");
         return -1;
     } else if (pid == 0) { // child
-        //set input/output
-        dup2(fds[i][0], STDIN_FILENO);
-        dup2(fds[i][1], STDOUT_FILENO);
         //close all other file descriptors
         close_fds(procc, i);
+    
+        dup2(fds[i][0], STDIN_FILENO);
+        dup2(fds[i][1], STDOUT_FILENO);
         //execute
         execvp(argv[0], argv); 
         //if exec returns it has failed and the parent should kill all spawned processes
@@ -56,7 +56,7 @@ pid_t exec_proc(char ** argv, int procc, int i) {
     }
 }
 
-int exec_procs(PROC_LIST * proc_list) {
+int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
     if (!proc_list || !proc_list->procc) return 1;
 
     int procc = proc_list->procc; //for quick access
@@ -64,7 +64,7 @@ int exec_procs(PROC_LIST * proc_list) {
     int sp_procs = 0;      //count of spawned processes
     pid_t cpids[PROCMAX];  //pids of the spawned processes
 
-    //int pgid = 0; // PGID of all processes of the job, the first processes's PID is given to the PGID 
+    int pgid = 0; // PGID of all processes of the job, the first processes's PID is given to the PGID 
 
     //default values for input and output redirect
     fds[0][0] = STDIN_FILENO;
@@ -82,7 +82,6 @@ int exec_procs(PROC_LIST * proc_list) {
 
     // open n - 1 pipes
     for (int i = 0; i < procc - 1; i++) {
-        prints("opening pipe\n");
         FD pipefd[2];
         if (pipe(pipefd)) {
             perror("Critical: couldn't open pipe");
@@ -95,14 +94,21 @@ int exec_procs(PROC_LIST * proc_list) {
 
     // loop through and execute all processes
     for (int i = 0; i < procc; i++) {
-        prints("executing process: ");
-        printi(i);
-        endl();
         if ((cpids[sp_procs++] = exec_proc(proc_list->procs[i], procc, i)) == -1) {
             kill_children(cpids, sp_procs);
             return CRITICAL;
         }
+        
+        *fg_pgid = pgid = cpids[0];
+        
+        if (setpgid(cpids[i], pgid)) {
+            perror("Invalid: setpgid failed");
+            kill_children(cpids, i + 1);
+            return CRITICAL;
+        }
     }
+
+    close_fds(procc, -1);
 
     //wait for all children
     for (int i = 0; i < sp_procs; i++) {

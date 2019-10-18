@@ -6,11 +6,33 @@
 #include "ioutil.h"    //functions for input/output, defines RDLEN, TOKMAX, PROCMAX
 #include "strutil.h"   //string utlity functions
 
-//do nothing if SIGINT is received
-void siginthandler(int signum) {}
+FD fg_pgid = 0;
+
+void siginthandler(int signum) {
+    prints("int on : ");
+    printi(fg_pgid);
+    endl();
+    if (fg_pgid) {
+        kill(fg_pgid, SIGINT);
+        fg_pgid = 0;
+    }
+}
+
+void sigtstophandler(int signum) {
+    if (fg_pgid) {
+        killpg(fg_pgid, SIGTSTP);
+        fg_pgid = 0;
+    }
+}
+
+void sigtermhandler(int signum) {}
 
 int main(int argc, const char ** argv) {
     signal(SIGINT, siginthandler);
+    signal(SIGTSTP, sigtstophandler);
+    signal(SIGTERM, sigtermhandler);
+    signal(SIGTTOU, SIG_IGN);
+
 
     PROC_LIST proc_list;  //processes filtered from tokens, contains allocated memory
     proc_list.tokc = 0;   // number of processes starts at 0
@@ -21,7 +43,7 @@ int main(int argc, const char ** argv) {
 
         switch (proc_list_from_input(&proc_list, &proc_id)) {
             case JOB:
-                switch (exec_procs(&proc_list)) {
+                switch (exec_procs(&proc_list, &fg_pgid)) {
                     case CRITICAL:  //critical
                         delete_proc_list(&proc_list);
                         prints("Invalid: Critical");
