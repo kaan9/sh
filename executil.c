@@ -49,7 +49,6 @@ pid_t exec_proc(char ** argv, int procc, int i) {
         //execute
         execvp(argv[0], argv); 
         //if exec returns it has failed and the parent should kill all spawned processes
-        prints("Invalid: No such file or directory\n");
         return -1;
     } else { // parent
         return pid;
@@ -95,8 +94,8 @@ int exec_procs(PROC_LIST * proc_list, FD * fg_pgid) {
     // loop through and execute all processes
     for (int i = 0; i < procc; i++) {
         if ((cpids[sp_procs++] = exec_proc(proc_list->procs[i], procc, i)) == -1) {
-            kill_children(cpids, sp_procs, SIGKILL);
-            return CRITICAL;
+            kill_children(cpids, sp_procs - 1, SIGKILL);
+            return EXEC_ERR;
         }
         
         *fg_pgid = pgid = cpids[0];

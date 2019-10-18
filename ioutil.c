@@ -285,7 +285,7 @@ INPUT_T proc_list_from_input(PROC_LIST * proc_list, int * proc_id) {
 
     if (!parse_tokens(proc_list->tokc, proc_list->tokens, proc_list)) return FAIL;  //no valid process given, skip execution
 
-    return JOB;
+    return VJOB;
 }
 
 void delete_proc_list(PROC_LIST * proc_list) {

@@ -34,7 +34,7 @@ typedef struct {
 } PROC_LIST;
 
 typedef enum {
-    JOB  = 0,  // valid job to be executed
+    VJOB  = 0,  // valid job to be executed
     EXIT = 1,  // EOF or "exit"
     SKIP = 2,  // no lines entered, skip execution
     JOBS = 3,  // requesting list of jobs

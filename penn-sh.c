@@ -64,7 +64,7 @@ int main(int argc, const char ** argv) {
         prints("penn-sh# ");
 
         switch (proc_list_from_input(&proc_list, &proc_id)) {
-            case JOB:
+            case VJOB:
                 switch (exec_procs(&proc_list, &fg_pgid)) {
                     case CRITICAL:  //critical
                         delete_proc_list(&proc_list);
@@ -74,7 +74,8 @@ int main(int argc, const char ** argv) {
                         continue;
                     case EXEC_ERR:
                         prints("Invalid: No such file or directory\n");
-                        continue;
+                        delete_proc_list(&proc_list);
+                        exit(EXIT_FAILURE);
                     case FILE_IO_ERR:
                         prints("Invalid: Unable to open input/output file\n");
                         continue;
