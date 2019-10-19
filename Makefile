@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall
+CFLAGS = -Wall 
 OFLAGS = -Wall -c
 SRCS = strutil.c ioutil.c linkedlist.c tokenizer.c executil.c penn-sh.c
 OBJS = strutil.o ioutil.o linkedlist.o tokenizer.o executil.o penn-sh.o

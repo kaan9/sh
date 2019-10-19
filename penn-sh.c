@@ -28,6 +28,14 @@ void free_memory(PROC_LIST * proc_list) {
     delete_job_ctrl();
 }
 
+void * handle_job(void * j) {
+    if (!j) return j;
+    JOB * job = (JOB *) j;
+    int res = wait_job(job);
+    if (!res) finished_job(job);
+    return j;
+}
+
 int main(int argc, const char ** argv) {
     signal(SIGINT, siginthandler);
     signal(SIGTSTP, sigtstophandler);
@@ -39,44 +47,21 @@ int main(int argc, const char ** argv) {
     proc_list.tokc = 0;   // number of processes starts at 0
     int proc_id    = -1;  // id of process called with fg or bg
 
-    init_jobctrl();
+    init_job_ctrl();
 
     while (1) {
-        
-      /*  for (int i = 0; i < sp_procs; i++) {
-            if (cpids[i]) {
-                int wstatus = 0, w = 0;
-                if ((w = waitpid(cpids[i], &wstatus, WUNTRACED | WNOHANG)) == -1) {
-                    perror("Invalid: waitpid");
-                    kill_children(cpids, sp_procs, SIGKILL); // kill job if waiting fails
-                    return CRITICAL;
-                } else if (w) {
-                    if (WIFEXITED(wstatus)) {
-                        cpids[i] = 0;
-                        alive_c--;
-                    } else if (WIFSIGNALED(wstatus)) {
-                        cpids[i] = 0;
-                        alive_c--;
-                    } else if (WIFSTOPPED(wstatus)) {
-                        // if any process is stopped, stop all processes in job
-                        kill_children(cpids, sp_procs, SIGSTOP);
-                        alive_c = 0;
-                    }
-                }
-            }
-        }
-*/
-
+//        map(job_ctrl.jobs, &handle_job);
         prints("penn-sh# ");
 
         switch (proc_list_from_input(&proc_list, &proc_id)) {
             case VJOB:
-                switch (exec_procs(&proc_list, &fg_pgid)) {
+                switch (exec_procs(&proc_list)) {
                     case CRITICAL:  //critical
                         free_memory(&proc_list);
                         prints("Invalid: Critical");
                         exit(EXIT_FAILURE);
                     case OK:
+                        prints("continue\n");
                         continue;
                     case EXEC_ERR:
                         prints("Invalid: No such file or directory\n");

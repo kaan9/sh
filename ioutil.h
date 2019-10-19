@@ -29,6 +29,7 @@ typedef struct {
 
     int procc;           // number of processes
     int tokc;            // number of tokens in tokens[]
+    int strlen;          // strlen
     char is_background;  //1 if running the process in the background, 0 otherwise
 
 } PROC_LIST;
@@ -77,10 +78,5 @@ INPUT_T proc_list_from_input(PROC_LIST * proc_list, int * proc_id);
  * frees the allocated memory in a proc_list instance
  */
 void delete_proc_list(PROC_LIST * proc_list);
-
-/**
- * prints the entire job in a proc_list without the &
- */
-void print_job(PROC_LIST * proc_list);
 
 #endif

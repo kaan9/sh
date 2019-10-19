@@ -245,20 +245,20 @@ int parse_tokens(int tokc, char ** tokens, PROC_LIST * proc_list) {
 }
 
 INPUT_T proc_list_from_input(PROC_LIST * proc_list, int * proc_id) {
-    char buf[PROCMAX];
+    char buf[RDLEN];
 
     delete_proc_list(proc_list);
     *proc_id = -1;
 
     // print a newline if readline is EOF
-    if ((!readln(buf) && (endl(), 1)) || streq(buf, "exit")) return EXIT;
+    if ((!(proc_list->strlen = readln(buf)) && (endl(), 1)) || streq(buf, "exit")) return EXIT;
 
     if (streq(buf, "jobs")) return JOBS;
 
     // store the buf in proc_list for later transfer to the job's name
     // store upto NULL or & if it exists
     int i;
-    for (i = 0; buf[i] && buf[i] != '&'; i++) {
+    for (i = 0; i < proc_list->strlen; i++) {
         proc_list->buf[i] = buf[i];
     }
     buf[i] = 0;

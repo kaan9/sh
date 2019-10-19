@@ -137,12 +137,12 @@ void * get(DEQUE * d, size_t i) {
     return node_i ? node_i->val : NULL;
 }
 
-void * replace(DEQUE * d, size_t i, void * replace) {
+void * replace(DEQUE * d, size_t i, void * r) {
     if (!d || i <= 0 || d->size < i) return NULL;
 
     struct node * n = NULL;
     void * ret = (n = traverse(d->head, i - 1) ? n->val : NULL);
-    n->val = replace;
+    n->val = r;
     return ret;
 }
 
@@ -176,7 +176,7 @@ int remove_val(DEQUE * d, void * val) {
 
     while(curr) {
         if (curr->val == val) {
-            d->dealloc(extract_node(d, curr));
+            if(d->dealloc) d->dealloc(extract_node(d, curr));
             return 0;
         }
         curr = curr->next;
@@ -184,7 +184,7 @@ int remove_val(DEQUE * d, void * val) {
     return 1;
 }
 
-int insert(DEQUE * d, void * val) {
+int insert_val(DEQUE * d, void * val) {
     if (!d) return -1;
     if (!d->head ^ !d->tail) return -1;
     if (d->size == 0) { //no jobs ever created yet
@@ -206,9 +206,20 @@ DEQUE * map(DEQUE * d, void * (*mapper)(void *)) {
     if (!d) return NULL;
     if (!d->head ^ !d->tail) return NULL;
     if (!d->head && !d->tail) return d;
+    void ** vals = malloc(sizeof(void*) * d->size);
+    int i = 0;
+    for (struct node * curr = d->head; curr && i < d->size; curr = curr->next, i++) {
+        vals[i] = curr->val;
+    }
+    int size = d->size;
+    for (int i = 0; i < size; i++) {
+        vals[i] = mapper(vals[i]);
+    }
     struct node * curr = d->head;
-    while (curr) {
-        curr->val = mapper(curr->val);
+    i = 0;
+    while (curr && i < size) {
+        while(!vals[i]) i++;
+        curr->val = vals[i];
         curr = curr->next;
     }
     return d;
