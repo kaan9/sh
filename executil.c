@@ -23,8 +23,8 @@ FD fds[PROCMAX][2];
 // deleter function for a JOB
 int JOB_deleter(void * j) {
     JOB * job = (JOB *) j;
-    free(job->name);
-    free(job->cpids);
+    if (job) free(job->name);
+    if (job) free(job->cpids);
     free(job);
     return 0;
 }
@@ -60,8 +60,9 @@ JOB * init_job(char * name, int strlen, int * cpids, int procc, int pgid) {
     job->name = malloc(sizeof(char) * (strlen + 1));
     job->cpids = malloc(sizeof(int) * procc);
     for (int i = 0; i < strlen; i++) job->name[i] = name[i];
-    name[strlen] = 0;
+    job->name[strlen] = 0;
     for (int i = 0; i < procc; i++) job->cpids[i] = cpids[i];
+    job->procc = procc;
     job->pgid = pgid;
     return job;
 }
@@ -69,7 +70,7 @@ JOB * init_job(char * name, int strlen, int * cpids, int procc, int pgid) {
 int stop_job(JOB * job) {
     killpg(job->pgid, SIGTSTP);
     tcsetpgrp(STDIN_FILENO, getpgid(0));
-    prints("\nStopped: ");
+    prints("Stopped: ");
     prints(job->name);  
     endl();
     push_back(job_ctrl.stopped, &job->job_id);
@@ -79,7 +80,7 @@ int stop_job(JOB * job) {
 int restart_job(JOB * job) {
     killpg(job->pgid, SIGCONT);
     tcsetpgrp(STDIN_FILENO, job->pgid);
-    prints("\nRestarting: ");
+    prints("Restarting: ");
     prints(job->name);  
     endl();
     return remove_val(job_ctrl.stopped, &job->job_id);
@@ -88,7 +89,7 @@ int restart_job(JOB * job) {
 int run_job(JOB * job) {
     killpg(job->pgid, SIGCONT);
     tcsetpgrp(STDIN_FILENO, getpgid(0));
-    prints("\nRunning: "); prints(job->name);  
+    prints("Running: "); prints(job->name);  
     endl();
     return remove_val(job_ctrl.stopped, &job->job_id);
 }
@@ -104,12 +105,13 @@ int bring_job_to_fg(JOB * job) {
 int delete_job(JOB * job) {
     remove_val(job_ctrl.created, &job->job_id);
     remove_val(job_ctrl.stopped, &job->job_id);
-    JOB_deleter(replace(job_ctrl.jobs, job->job_id, NULL));
+    replace(job_ctrl.jobs, job->job_id, NULL);
+    JOB_deleter(job);
     return 0;
 }
 
 int finished_job(JOB * job) {
-    prints("\nFinished: ");
+    prints("Finished: ");
     prints(job->name);
     endl();
     delete_job(job);
@@ -117,42 +119,42 @@ int finished_job(JOB * job) {
 }
 
 int killed_job(JOB * job) {
-    prints("\nKilled: ");
+    prints("Killed: ");
     prints(job->name);
     endl();
     delete_job(job);
     return 0;
 }
 
-
 // calls WNOHANG waitpid on all processes in a job
 // if any are stopped, the entire process is stopped and -1 is returned
-// otherwise the number of non-terminated processes are called (WIFEXITED or WIFSIGNALED)
+// otherwise the number of non-terminated processes are returned (WIFEXITED or WIFSIGNALED)
+// a return of 0 implies that the job has terminated
 int wait_job(JOB * job) {
-    int total = 0;
+    if (!job) return 0;
     for (int i = 0; i < job->procc; i++) {
          if (job->cpids[i]) {
             int wstatus = 0, w = 0;
                 if ((w = waitpid(job->cpids[i], &wstatus, WUNTRACED | WNOHANG)) == -1) {
                     perror("Invalid: waitpid");
+                    printi(job->cpids[i]);
                     killpg(job->pgid, SIGKILL); // kill job if waiting fail
                     return CRITICAL;
                 } else if (w) {
-                    if (WIFEXITED(wstatus)) {
+                    if (WIFEXITED(wstatus) || WIFSIGNALED(wstatus)) {
                         job->cpids[i] = 0;
-                        total++;
-                    } else if (WIFSIGNALED(wstatus)) {
-                        job->cpids[i] = 0;
-                        total++;
-                    } else if (WIFSTOPPED(wstatus)) {
+                    } 
+                    else if (WIFSTOPPED(wstatus)) {
                         // if any process is stopped, stop all processes in job
                         stop_job(job);
                         return -1;
+                    }
                 }
-            }
-        }
+         }
     }
-    return -1;
+    int total_running = 0;
+    for (int i = 0; i < job->procc; i++) if (job->cpids[i]) total_running++;
+    return total_running;
 }
 
 // execute a single process
@@ -238,17 +240,15 @@ int exec_procs(PROC_LIST * proc_list) {
         run_job(new_job);
     } else {
         tcsetpgrp(STDIN_FILENO, pgid);
-        fg_job = new_job; // for singal handlers in main
+        fg_job = new_job; // for signal handlers in main
         int total = 0;
-        while ((total = wait_job(new_job)))if (total == -1) break;
+        while ((total = wait_job(new_job))) if (total == -1) break;
         if (!total) delete_job(new_job);
         fg_job = NULL;
         tcsetpgrp(STDIN_FILENO, getpgid(0));
     }
-    prints("here\n");
     return 0;
 }
-
 
 // 1 if running 0 if stopped, also stops jobs if any process is detected to have stopped
 // -1 if job terminated (but not yet waited)
@@ -259,21 +259,25 @@ int bg_job_status(JOB * job) {
     return 1;
 }
 
-void * print_job(void * j) {
-    if (!j) return j;
-    JOB * job = (void *) j;
-    int status = bg_job_status(job);
-    if (status == -1) return j;
+void print_job(JOB * job) {
+    if (!job) return;
+    int status = wait_job(job);
+    if (status == 0) {
+        finished_job(job); 
+        return;
+    }
     printc('[');
     printi(job->job_id);
     prints("] ");
     prints(job->name);
-    prints(status ? " (running)\n" : " (stopped)\n");
-    return j;
+    prints(status > 0 ? " (running)\n" : " (stopped)\n");
 }
 
 int jobs() {
-    map(job_ctrl.jobs, &print_job);
+    if (!job_ctrl.jobs) return -1;
+    for (struct node * curr = job_ctrl.jobs->head; curr; curr = curr->next) {
+        if (curr->val) print_job(curr->val);
+    }
     return 0;
 }
 

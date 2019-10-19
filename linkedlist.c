@@ -4,6 +4,8 @@
  */
 #include "linkedlist.h"
 
+#include "ioutil.h"
+
 DEQUE * make_empty_list(int (*deleter)(void *)) {
     DEQUE * d = malloc(sizeof(DEQUE));
     if (!d) return NULL;
@@ -125,23 +127,21 @@ void * pop_front(DEQUE * d) {
  * note: indexed at 0, 
  * returns node at position i
  */
-struct node * traverse(struct node * n, size_t i) { 
+struct node * traverse(struct node * n, size_t i) {
     if (i <= 0 || !n) return n;
     return traverse(n->next, i - 1);
 }
 
 void * get(DEQUE * d, size_t i) {
     if (!d || i <= 0) return NULL;
-
     struct node * node_i = traverse(d->head, i - 1);
     return node_i ? node_i->val : NULL;
 }
 
 void * replace(DEQUE * d, size_t i, void * r) {
     if (!d || i <= 0 || d->size < i) return NULL;
-
     struct node * n = NULL;
-    void * ret = (n = traverse(d->head, i - 1) ? n->val : NULL);
+    void * ret = ((n = traverse(d->head, i - 1)) ? n->val : NULL);
     n->val = r;
     return ret;
 }
