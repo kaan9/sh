@@ -6,9 +6,9 @@
 
 #include "ioutil.h"
 
-DEQUE* make_empty_list(int (*deleter)(void*))
+DEQUE *make_empty_list(int (*deleter)(void *))
 {
-	DEQUE* d = malloc(sizeof(DEQUE));
+	DEQUE *d = malloc(sizeof(DEQUE));
 	if (!d)
 		return NULL;
 	d->dealloc = deleter;
@@ -17,9 +17,9 @@ DEQUE* make_empty_list(int (*deleter)(void*))
 	return d;
 }
 
-DEQUE* make_list(void* val, int (*deleter)(void*))
+DEQUE *make_list(void *val, int (*deleter)(void *))
 {
-	DEQUE* d = malloc(sizeof(DEQUE));
+	DEQUE *d = malloc(sizeof(DEQUE));
 	if (!d)
 		return NULL; //if malloc fails, return NULL
 	d->dealloc = deleter;
@@ -34,7 +34,7 @@ DEQUE* make_list(void* val, int (*deleter)(void*))
 	return d;
 }
 
-int delete_list(DEQUE* d)
+int delete_list(DEQUE *d)
 {
 	if (!d)
 		return -1;
@@ -43,11 +43,11 @@ int delete_list(DEQUE* d)
 		return 0;
 	}
 	int success = 0;
-	struct node* curr = d->head;
+	struct node *curr = d->head;
 	while (curr) {
 		if (d->dealloc)
 			success += d->dealloc(curr->val);
-		struct node* tmp = curr->next;
+		struct node *tmp = curr->next;
 		free(curr);
 		curr = tmp;
 	}
@@ -55,21 +55,21 @@ int delete_list(DEQUE* d)
 	return success; //return the total of vals returned by the deallocator, should be 0
 }
 
-void* list_front(DEQUE* d)
+void *list_front(DEQUE *d)
 {
 	return d && d->head ? d->head->val : NULL;
 }
 
-void* list_back(DEQUE* d)
+void *list_back(DEQUE *d)
 {
 	return d && d->tail ? d->tail->val : NULL;
 }
 
-DEQUE* push_back(DEQUE* d, void* val)
+DEQUE *push_back(DEQUE *d, void *val)
 {
 	if (!d)
 		return NULL; //check that deque is not null
-	struct node* tmp = malloc(sizeof(struct node));
+	struct node *tmp = malloc(sizeof(struct node));
 	if (!tmp)
 		return NULL;
 	tmp->val = val;
@@ -85,11 +85,11 @@ DEQUE* push_back(DEQUE* d, void* val)
 	return d;
 }
 
-DEQUE* push_front(DEQUE* d, void* val)
+DEQUE *push_front(DEQUE *d, void *val)
 {
 	if (!d)
 		return NULL; //check that deque is not null
-	struct node* tmp = malloc(sizeof(struct node));
+	struct node *tmp = malloc(sizeof(struct node));
 	if (!tmp)
 		return NULL;
 	tmp->val = val;
@@ -105,16 +105,16 @@ DEQUE* push_front(DEQUE* d, void* val)
 	return d;
 }
 
-void* pop_back(DEQUE* d)
+void *pop_back(DEQUE *d)
 {
 	if (!d)
 		return NULL; //invalid input
 	if (d->size == 0) {
 		return NULL; //nothing to pop
 	}
-	struct node* tmp = d->tail;
+	struct node *tmp = d->tail;
 	d->tail = d->tail->prev;
-	void* ret = tmp->val;
+	void *ret = tmp->val;
 	free(tmp);
 	if (d->size == 1) {
 		d->head = NULL;
@@ -125,13 +125,13 @@ void* pop_back(DEQUE* d)
 	return ret;
 }
 
-void* pop_front(DEQUE* d)
+void *pop_front(DEQUE *d)
 {
 	if (!d)
 		return NULL; //invalid input
-	struct node* tmp = d->head;
+	struct node *tmp = d->head;
 	d->head = d->head->next;
-	void* ret = tmp->val;
+	void *ret = tmp->val;
 	free(tmp);
 	if (d->size == 1) {
 		d->tail = NULL;
@@ -146,32 +146,32 @@ void* pop_front(DEQUE* d)
  * note: indexed at 0, 
  * returns node at position i
  */
-struct node* traverse(struct node* n, size_t i)
+struct node *traverse(struct node *n, size_t i)
 {
 	if (i <= 0 || !n)
 		return n;
 	return traverse(n->next, i - 1);
 }
 
-void* get(DEQUE* d, size_t i)
+void *get(DEQUE *d, size_t i)
 {
 	if (!d || i <= 0)
 		return NULL;
-	struct node* node_i = traverse(d->head, i - 1);
+	struct node *node_i = traverse(d->head, i - 1);
 	return node_i ? node_i->val : NULL;
 }
 
-void* replace(DEQUE* d, size_t i, void* r)
+void *replace(DEQUE *d, size_t i, void *r)
 {
 	if (!d || i <= 0 || d->size < i)
 		return NULL;
-	struct node* n = NULL;
-	void* ret = ((n = traverse(d->head, i - 1)) ? n->val : NULL);
+	struct node *n = NULL;
+	void *ret = ((n = traverse(d->head, i - 1)) ? n->val : NULL);
 	n->val = r;
 	return ret;
 }
 
-void* extract_node(DEQUE* d, struct node* n)
+void *extract_node(DEQUE *d, struct node *n)
 {
 	if (!d || !n || !d->head || !d->tail)
 		return NULL;
@@ -180,14 +180,14 @@ void* extract_node(DEQUE* d, struct node* n)
 	if (d->tail == n)
 		return pop_back(d);
 	if (d->size == 1) {
-		void* ret = n->val;
+		void *ret = n->val;
 		d->head = d->tail = NULL;
 		d->size--;
 		return ret;
 	} else {
-		void* ret = n->val;
-		struct node* prev = n->prev;
-		struct node* next = n->next;
+		void *ret = n->val;
+		struct node *prev = n->prev;
+		struct node *next = n->next;
 		free(n);
 		prev->next = next;
 		next->prev = prev;
@@ -196,17 +196,15 @@ void* extract_node(DEQUE* d, struct node* n)
 	}
 }
 
-int remove_val(DEQUE* d, void* val)
+int remove_val(DEQUE *d, void *val)
 {
+	struct node *curr = d->head;
 	if (!d)
 		return -1;
 	if (!d->head && !d->tail)
 		return 1;
 	if (!d->head || !d->tail)
 		return -1;
-
-	struct node* curr = d->head;
-
 	while (curr) {
 		if (curr->val == val) {
 			if (d->dealloc)
@@ -218,8 +216,10 @@ int remove_val(DEQUE* d, void* val)
 	return 1;
 }
 
-int insert_val(DEQUE* d, void* val)
+int insert_val(DEQUE *d, void *val)
 {
+	int i = 1;
+	struct node *curr;
 	if (!d)
 		return -1;
 	if (!d->head ^ !d->tail)
@@ -228,8 +228,7 @@ int insert_val(DEQUE* d, void* val)
 		push_front(d, val);
 		return 1;
 	}
-	int i = 1;
-	for (struct node* curr = d->head; curr; curr = curr->next, i++) {
+	for (curr = d->head; curr; curr = curr->next, i++) {
 		if (!curr->val) {
 			curr->val = val;
 			return i;
@@ -239,25 +238,25 @@ int insert_val(DEQUE* d, void* val)
 	return i + 1;
 }
 
-DEQUE* map(DEQUE* d, void* (*mapper)(void*))
+DEQUE *map(DEQUE *d, void *(*mapper)(void *))
 {
+	struct node *curr;
+	int i = 0;
 	if (!d)
 		return NULL;
 	if (!d->head ^ !d->tail)
 		return NULL;
 	if (!d->head && !d->tail)
 		return d;
-	void** vals = malloc(sizeof(void*) * d->size);
-	int i = 0;
-	for (struct node* curr = d->head; curr && i < d->size;
-	     curr = curr->next, i++) {
+	void **vals = malloc(sizeof(void *) * d->size);
+	for (curr = d->head; curr && i < d->size; curr = curr->next, i++) {
 		vals[i] = curr->val;
 	}
 	int size = d->size;
-	for (int i = 0; i < size; i++) {
+	for (i = 0; i < size; i++) {
 		vals[i] = mapper(vals[i]);
 	}
-	struct node* curr = d->head;
+	curr = d->head;
 	i = 0;
 	while (curr && i < size) {
 		while (!vals[i])

@@ -22,11 +22,11 @@
 typedef struct {
 	char buf[RDLEN];
 
-	char* tokens[TOKMAX]; // tokens parsed from input, only this contains allocated memory
+	char *tokens[TOKMAX]; // tokens parsed from input, only this contains allocated memory
 
-	char** procs[PROCMAX]; //pointer to the argv of each process to be executed (argv[0] is proc name), proc[i] is pipelined to proc[i+1]
-	char* input_redirect; // if NULL, read from stdin
-	char* output_redirect; // if NULL, write to stdout
+	char **procs[PROCMAX]; //pointer to the argv of each process to be executed (argv[0] is proc name), proc[i] is pipelined to proc[i+1]
+	char *input_redirect; // if NULL, read from stdin
+	char *output_redirect; // if NULL, write to stdout
 
 	int procc; // number of processes
 	int tokc; // number of tokens in tokens[]
@@ -49,7 +49,7 @@ typedef enum {
 void printc(char c);
 
 /*prints a 0-terminated string*/
-void prints(const char* s);
+void prints(const char *s);
 
 /* prints an unsigned integer between 0 and INT_MAX + 1 inclusive
  * this is a utility function for printi and as such takes a long argument to account for printi(INT_MIN)
@@ -64,11 +64,11 @@ void printi(int n);
  * reads the input line, tokenizes the input and parses it into proc_list if valid job
  * returns an INPUT_T based on the validity and type of input
 */
-INPUT_T proc_list_from_input(PROC_LIST* proc_list, int* proc_id);
+INPUT_T proc_list_from_input(PROC_LIST *proc_list, int *proc_id);
 
 /**
  * frees the allocated memory in a proc_list instance
  */
-void delete_proc_list(PROC_LIST* proc_list);
+void delete_proc_list(PROC_LIST *proc_list);
 
 #endif

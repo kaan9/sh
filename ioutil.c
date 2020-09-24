@@ -10,7 +10,7 @@
 #include "tokenizer.h"
 
 /* checks the arguments passed to main and parses the value of timeout */
-int check_args(int argc, const char** argv)
+int check_args(int argc, const char **argv)
 {
 	int timeout = -1; //default value of -1 indicates no timeout
 
@@ -23,7 +23,7 @@ int check_args(int argc, const char** argv)
 		}
 	} else if (argc > ARGC) {
 		errno = EINVAL;
-		perror("Invalid:    USAGE: penn-shredder <timeout>");
+		perror("Invalid:    USAGE: sh <timeout>");
 		exit(EXIT_FAILURE);
 	}
 	return timeout;
@@ -41,7 +41,7 @@ static void flush()
  * returns length of read input
  * returns -1 if first char is EOF
  */
-int readln(char* buf)
+int readln(char *buf)
 {
 	int len = read(STDIN_FILENO, buf, RDLEN);
 	if (!len)
@@ -63,11 +63,11 @@ int readln(char* buf)
  * buf must be 0-terminated
  * returns number of tokens
  */
-int tokenize_input(char* buf, char** argv)
+int tokenize_input(char *buf, char **argv)
 {
 	int tok_c = 0; //count of current token
-	char* tok = NULL; //temp token
-	TOKENIZER* tokenizer = init_tokenizer(buf);
+	char *tok = NULL; //temp token
+	TOKENIZER *tokenizer = init_tokenizer(buf);
 	if (!tokenizer)
 		return 0; //error in creating tokenizer
 
@@ -82,9 +82,10 @@ int tokenize_input(char* buf, char** argv)
 /**
  * frees an array of strings of length len
  */
-void free_str_array(char** argv, size_t len)
+void free_str_array(char **argv, size_t len)
 {
-	for (size_t i = 0; i < len; i++) {
+	size_t i;
+	for (i = 0; i < len; i++) {
 		free(argv[i]);
 	}
 }
@@ -93,7 +94,7 @@ void free_str_array(char** argv, size_t len)
  * utility function for fg/bg parsing
  * returns true if s points to a NULL-terminated integer string, false otherwise
  */
-int is_p_int(char* s)
+int is_p_int(char *s)
 {
 	if (!*s)
 		return 0;
@@ -111,9 +112,9 @@ int is_p_int(char* s)
  * if an error occurs may return proc_list with corrupt data
  * returns number of processes parsed or 0 if a parsing error occurred
  */
-int parse_tokens(int tokc, char** tokens, PROC_LIST* proc_list)
+int parse_tokens(int tokc, char **tokens, PROC_LIST *proc_list)
 {
-	int procc = 0; //number of processes
+	int i = 0, procc = 0; //number of processes
 
 	//handle background terminating background process
 	if (!strcmp(tokens[tokc - 1], "&")) {
@@ -130,7 +131,7 @@ int parse_tokens(int tokc, char** tokens, PROC_LIST* proc_list)
 
 	//distribute the processes in the tokens into proc_list, delimited by "|"
 	proc_list->procs[procc++] = tokens;
-	for (int i = 0; i < tokc - 1; i++)
+	for (i = 0; i < tokc - 1; i++)
 		if (!strcmp(tokens[i], "&"))
 			return 0; //invalid char
 		else if (!strcmp(tokens[i], "|")) {
@@ -150,7 +151,7 @@ int parse_tokens(int tokc, char** tokens, PROC_LIST* proc_list)
 
 	proc_list->procc = procc;
 
-	char** argv; //temporary for a process
+	char **argv; //temporary for a process
 
 	//check first process for invalid token
 	if (!strcmp(proc_list->procs[0][0], "<") ||
@@ -160,7 +161,7 @@ int parse_tokens(int tokc, char** tokens, PROC_LIST* proc_list)
 		return 0;
 
 	//iterate over all processes except the first and the last and check for invalid "<", ">"
-	for (int i = 1; i < procc - 1; i++) {
+	for (i = 1; i < procc - 1; i++) {
 		argv = proc_list->procs[i]; // arguments of ith process
 		while (*argv) {
 			if (!strcmp(*argv, "<") || !strcmp(*argv, ">"))
@@ -231,15 +232,16 @@ int parse_tokens(int tokc, char** tokens, PROC_LIST* proc_list)
 	return procc;
 }
 
-INPUT_T proc_list_from_input(PROC_LIST* proc_list, int* proc_id)
+INPUT_T proc_list_from_input(PROC_LIST *proc_list, int *proc_id)
 {
+	int i;
 	char buf[RDLEN];
 
 	delete_proc_list(proc_list);
 	*proc_id = -1;
 
 	// print a newline if readline is EOF
-	if ((!(proc_list->strlen = readln(buf)) && (endl(), 1)) ||
+	if ((!(proc_list->strlen = readln(buf)) && (putchar('\n'), 1)) ||
 	    !strcmp(buf, "exit"))
 		return EXIT;
 
@@ -248,7 +250,6 @@ INPUT_T proc_list_from_input(PROC_LIST* proc_list, int* proc_id)
 
 	// store the buf in proc_list for later transfer to the job's name
 	// store upto NULL or & if it exists
-	int i;
 	for (i = 0; i < proc_list->strlen; i++) {
 		proc_list->buf[i] = buf[i];
 	}
@@ -301,7 +302,7 @@ INPUT_T proc_list_from_input(PROC_LIST* proc_list, int* proc_id)
 	return VJOB;
 }
 
-void delete_proc_list(PROC_LIST* proc_list)
+void delete_proc_list(PROC_LIST *proc_list)
 {
 	free_str_array(proc_list->tokens, proc_list->tokc);
 	proc_list->procc = 0;

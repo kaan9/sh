@@ -10,8 +10,8 @@
  * tokenizer's state.
  */
 typedef struct tokenizer {
-	char* str; /* the string to parse */
-	char* pos; /* position in string */
+	char *str; /* the string to parse */
+	char *pos; /* position in string */
 } TOKENIZER;
 
 /**
@@ -20,13 +20,13 @@ typedef struct tokenizer {
  * @param string the string that will be tokenized.  Should be non-NULL.
  * @return an initialized string tokenizer on success, NULL on error.
  */
-TOKENIZER* init_tokenizer(char* string);
+TOKENIZER *init_tokenizer(char *string);
 
 /**
  * Deallocates space used by the tokenizer.
  * @param tokenizer a non-NULL, initialized string tokenizer
  */
-void free_tokenizer(TOKENIZER* tokenizer);
+void free_tokenizer(TOKENIZER *tokenizer);
 
 /**
  * Retrieves the next token in the string.  The returned token is
@@ -35,6 +35,6 @@ void free_tokenizer(TOKENIZER* tokenizer);
  * @param tokenizer an initiated string tokenizer
  * @return the next token
  */
-char* get_next_token(TOKENIZER* tokenizer);
+char *get_next_token(TOKENIZER *tokenizer);
 
 #endif

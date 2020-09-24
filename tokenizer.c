@@ -13,16 +13,16 @@
  * @param string the string that will be tokenized.  Should be non-NULL.
  * @return an initialized string tokenizer on success, NULL on error.
  */
-TOKENIZER* init_tokenizer(char* string)
+TOKENIZER *init_tokenizer(char *string)
 {
-	TOKENIZER* tokenizer;
+	TOKENIZER *tokenizer;
 	int len;
 	assert(string != NULL);
 
-	tokenizer = (TOKENIZER*)malloc(sizeof(TOKENIZER));
+	tokenizer = (TOKENIZER *)malloc(sizeof(TOKENIZER));
 	assert(tokenizer != NULL);
 	len = strlen(string) + 1; /* don't forget \0 char */
-	tokenizer->str = (char*)malloc(len);
+	tokenizer->str = (char *)malloc(len);
 	assert(tokenizer->str != NULL);
 	memcpy(tokenizer->str, string, len);
 	tokenizer->pos = tokenizer->str;
@@ -33,7 +33,7 @@ TOKENIZER* init_tokenizer(char* string)
  * Deallocates space used by the tokenizer.
  * @param tokenizer a non-NULL, initialized string tokenizer
  */
-void free_tokenizer(TOKENIZER* tokenizer)
+void free_tokenizer(TOKENIZER *tokenizer)
 {
 	assert(tokenizer != NULL);
 	free(tokenizer->str);
@@ -47,12 +47,12 @@ void free_tokenizer(TOKENIZER* tokenizer)
  * @param tokenizer an initiated string tokenizer
  * @return the next token
  */
-char* get_next_token(TOKENIZER* tokenizer)
+char *get_next_token(TOKENIZER *tokenizer)
 {
 	assert(tokenizer != NULL);
-	char* startptr = tokenizer->pos;
-	char* endptr;
-	char* tok;
+	char *startptr = tokenizer->pos;
+	char *endptr;
+	char *tok;
 
 	if (*tokenizer->pos == '\0') /* handle end-case */
 		return NULL;
@@ -60,7 +60,7 @@ char* get_next_token(TOKENIZER* tokenizer)
 	/* if current position is a delimiter, then return it */
 	if ((*startptr == '|') || (*startptr == '&') || (*startptr == '<') ||
 	    (*startptr == '>')) {
-		tok = (char*)malloc(2);
+		tok = (char *)malloc(2);
 		tok[0] = *startptr;
 		tok[1] = '\0';
 		tokenizer->pos++;
@@ -79,7 +79,7 @@ char* get_next_token(TOKENIZER* tokenizer)
 		if ((*(endptr + 1) == '|') || (*(endptr + 1) == '&') ||
 		    (*(endptr + 1) == '<') || (*(endptr + 1) == '>') ||
 		    (*(endptr + 1) == '\0') || (isspace(*(endptr + 1)))) {
-			tok = (char*)malloc((endptr - startptr) + 2);
+			tok = (char *)malloc((endptr - startptr) + 2);
 			memcpy(tok, startptr, (endptr - startptr) + 1);
 			tok[(endptr - startptr) + 1] =
 				'\0'; /* null-terminate the string */
