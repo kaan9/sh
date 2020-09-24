@@ -1,8 +1,8 @@
 CC = clang
 CFLAGS = -Wall 
 OFLAGS = -Wall -c
-SRCS = strutil.c ioutil.c linkedlist.c tokenizer.c executil.c penn-sh.c
-OBJS = strutil.o ioutil.o linkedlist.o tokenizer.o executil.o penn-sh.o
+SRCS = ioutil.c linkedlist.c tokenizer.c executil.c penn-sh.c
+OBJS = ioutil.o linkedlist.o tokenizer.o executil.o penn-sh.o
 TARGETS = clean penn-sh
 LIBS = 
 
@@ -13,7 +13,7 @@ default: all
 
 all: $(TARGETS)
 
-penn-sh: $(OBJS) 
+penn-sh: $(OBJS) clean
 	$(CC) $(CFLAGS) $(LIBS) -o $@ $(OBJS)
 
 $(SRCS):
