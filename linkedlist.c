@@ -238,7 +238,7 @@ int insert_val(DEQUE *d, void *val)
 	return i + 1;
 }
 
-DEQUE *map(DEQUE *d, void *(*mapper)(void *))
+DEQUE *map(DEQUE *d, void *(*mapper)(void *) )
 {
 	struct node *curr;
 	int i = 0;

@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define ISDELIM(x) (((x) == '|') || ((x) == '&') || ((x) == '<') || ((x) == '>'))
+#define ISDELIM(x)                                                             \
+	(((x) == '|') || ((x) == '&') || ((x) == '<') || ((x) == '>'))
 
 /* checks the arguments passed to main and parses the value of timeout */
 int check_args(int argc, const char **argv)

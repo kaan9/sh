@@ -22,7 +22,7 @@ FD fds[PROCMAX][2];
 /* deleter function for a JOB */
 static int JOB_deleter(void *j)
 {
-	JOB *job = (JOB *)j;
+	JOB *job = (JOB *) j;
 	if (job) {
 		free(job->name);
 		free(job->cpids);
@@ -148,7 +148,7 @@ int wait_job(JOB *job)
 				perror("Invalid: waitpid");
 				printf("%d", job->cpids[i]);
 				kill(-job->pgid,
-				       SIGKILL); /* kill job if waiting fail */
+				     SIGKILL); /* kill job if waiting fail */
 				return CRITICAL;
 			} else if (w) {
 				if (WIFEXITED(wstatus) ||

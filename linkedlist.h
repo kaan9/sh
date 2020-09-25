@@ -129,6 +129,6 @@ int insert_val(DEQUE *d, void *val);
  *  returns NULL if d is null or d is corrupted (invalid deque)
  *  returns d if successful
  */
-DEQUE *map(DEQUE *d, void *(*mapper)(void *));
+DEQUE *map(DEQUE *d, void *(*mapper)(void *) );
 
 #endif
