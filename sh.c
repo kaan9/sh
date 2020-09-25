@@ -1,4 +1,3 @@
-/* sh	---  kaan*/
 #include <signal.h>
 #include <stdlib.h>
 
@@ -12,7 +11,7 @@ void siginthandler(int signum)
 	printf("sending int to fg1\n");
 	if (fg_job) {
 		printf("sending int to fg\n");
-		killpg(fg_job->pgid, SIGINT);
+		kill(-fg_job->pgid, SIGINT);
 		fg_job = NULL;
 	}
 }
@@ -37,14 +36,15 @@ void free_memory(PROC_LIST *proc_list)
 
 void sync_wait()
 {
+	struct node *np;
 	if (!job_ctrl.jobs)
 		return;
-	for (struct node *curr = job_ctrl.jobs->head; curr; curr = curr->next) {
-		if (curr->val)
-			switch (wait_job(curr->val)) {
+	for (np = job_ctrl.jobs->head; np; np = np->next) {
+		if (np->val)
+			switch (wait_job(np->val)) {
 			case 0:
-				finished_job(curr->val);
-				curr->val = NULL;
+				finished_job(np->val);
+				np->val = NULL;
 			case -1:
 				continue;
 			}
@@ -53,18 +53,18 @@ void sync_wait()
 
 int main(int argc, const char **argv)
 {
+	int proc_id = -1; /* id of process called with fg or bg */
+	PROC_LIST proc_list; /* processes filtered from tokens, contains allocated memory */
+	proc_list.tokc = 0; /* number of processes starts at 0 */
+
 	signal(SIGINT, siginthandler);
 	signal(SIGTSTP, sigtstophandler);
 	signal(SIGTERM, sigtermhandler);
 	signal(SIGTTOU, SIG_IGN);
 
-	PROC_LIST proc_list; //processes filtered from tokens, contains allocated memory
-	proc_list.tokc = 0; // number of processes starts at 0
-	int proc_id = -1; // id of process called with fg or bg
-
 	init_job_ctrl();
 
-	while (1) {
+	for (;;) {
 		sync_wait();
 
 		printf("$ ");
@@ -73,7 +73,7 @@ int main(int argc, const char **argv)
 		switch (proc_list_from_input(&proc_list, &proc_id)) {
 		case VJOB:
 			switch (exec_procs(&proc_list)) {
-			case CRITICAL: //critical
+			case CRITICAL:
 				free_memory(&proc_list);
 				printf("Invalid: Critical");
 				exit(EXIT_FAILURE);

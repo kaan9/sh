@@ -1,7 +1,6 @@
 //Implementation of tokenizer.h
 #include "tokenizer.h"
 
-#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,13 +16,10 @@ TOKENIZER *init_tokenizer(char *string)
 {
 	TOKENIZER *tokenizer;
 	int len;
-	assert(string != NULL);
 
 	tokenizer = (TOKENIZER *)malloc(sizeof(TOKENIZER));
-	assert(tokenizer != NULL);
 	len = strlen(string) + 1; /* don't forget \0 char */
 	tokenizer->str = (char *)malloc(len);
-	assert(tokenizer->str != NULL);
 	memcpy(tokenizer->str, string, len);
 	tokenizer->pos = tokenizer->str;
 	return tokenizer;
@@ -35,7 +31,6 @@ TOKENIZER *init_tokenizer(char *string)
  */
 void free_tokenizer(TOKENIZER *tokenizer)
 {
-	assert(tokenizer != NULL);
 	free(tokenizer->str);
 	free(tokenizer);
 }
@@ -49,12 +44,11 @@ void free_tokenizer(TOKENIZER *tokenizer)
  */
 char *get_next_token(TOKENIZER *tokenizer)
 {
-	assert(tokenizer != NULL);
 	char *startptr = tokenizer->pos;
 	char *endptr;
 	char *tok;
 
-	if (*tokenizer->pos == '\0') /* handle end-case */
+	if (!*tokenizer->pos) /* handle end-case */
 		return NULL;
 
 	/* if current position is a delimiter, then return it */
@@ -92,6 +86,5 @@ char *get_next_token(TOKENIZER *tokenizer)
 		endptr++;
 	}
 
-	assert(0); /* should never reach here */
 	return NULL; /* but satisfy compiler */
 }

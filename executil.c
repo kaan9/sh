@@ -3,24 +3,24 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <signal.h> //for kill
-#include <stdio.h> //for perror
-#include <stdlib.h> //for exit
+#include <signal.h> /* for kill */
+#include <stdio.h> /* for perror */
+#include <stdlib.h> /* for exit */
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-//functions for input/output, defines RDLEN, TOKMAX, PROCMAX
+/* functions for input/output, defines RDLEN, TOKMAX, PROCMAX */
 #include "ioutil.h"
 #include "linkedlist.h"
 
-// list of input and output file descriptors for each file
-// FD[i - 1][0] is read and FD[i - 1][1] is write for child #i
-// after forking, each child should close all other FDs
+/* list of input and output file descriptors for each file */
+/* FD[i - 1][0] is read and FD[i - 1][1] is write for child #i */
+/* after forking, each child should close all other FDs */
 FD fds[PROCMAX][2];
 
-// deleter function for a JOB
-void JOB_deleter(void *j)
+/* deleter function for a JOB */
+static int JOB_deleter(void *j)
 {
 	JOB *job = (JOB *)j;
 	if (job) {
@@ -28,6 +28,7 @@ void JOB_deleter(void *j)
 		free(job->cpids);
 	}
 	free(job);
+	return 0;
 }
 
 int init_job_ctrl()
@@ -37,9 +38,9 @@ int init_job_ctrl()
 		 (job_ctrl.stopped = make_empty_list(NULL)));
 }
 
-// deletes the job control, deallocates created and stopped
-// goes through all jobs, frees the name and cpids, then frees the jobs
-// then frees the jobs, created, and stopped deques
+/* deletes the job control, deallocates created and stopped */
+/* goes through all jobs, frees the name and cpids, then frees the jobs */
+/* then frees the jobs, created, and stopped deques */
 void delete_job_ctrl()
 {
 	delete_list(job_ctrl.jobs);
@@ -47,7 +48,7 @@ void delete_job_ctrl()
 	delete_list(job_ctrl.stopped);
 }
 
-// close all file descriptor pairs in fds except for pair p
+/* close all file descriptor pairs in fds except for pair p */
 void close_fds(int procc, int p)
 {
 	int i;
@@ -82,7 +83,7 @@ JOB *init_job(char *name, int strlen, int *cpids, int procc, int pgid)
 
 void stop_job(JOB *job)
 {
-	killpg(job->pgid, SIGTSTP);
+	kill(-job->pgid, SIGTSTP);
 	tcsetpgrp(STDIN_FILENO, getpgid(0));
 	printf("Stopped: %s\n", job->name);
 	push_back(job_ctrl.stopped, &job->job_id);
@@ -90,7 +91,7 @@ void stop_job(JOB *job)
 
 int restart_job(JOB *job)
 {
-	killpg(job->pgid, SIGCONT);
+	kill(-job->pgid, SIGCONT);
 	tcsetpgrp(STDIN_FILENO, job->pgid);
 	printf("Restarting: %s\n", job->name);
 	return remove_val(job_ctrl.stopped, &job->job_id);
@@ -98,7 +99,7 @@ int restart_job(JOB *job)
 
 int run_job(JOB *job)
 {
-	killpg(job->pgid, SIGCONT);
+	kill(-job->pgid, SIGCONT);
 	tcsetpgrp(STDIN_FILENO, getpgid(0));
 	printf("Running: %s\n", job->name);
 	return remove_val(job_ctrl.stopped, &job->job_id);
@@ -130,10 +131,10 @@ void killed_job(JOB *job)
 	delete_job(job);
 }
 
-// calls WNOHANG waitpid on all processes in a job
-// if any are stopped, the entire process is stopped and -1 is returned
-// otherwise the number of non-terminated processes are returned (WIFEXITED or WIFSIGNALED)
-// a return of 0 implies that the job has terminated
+/* calls WNOHANG waitpid on all processes in a job */
+/* if any are stopped, the entire process is stopped and -1 is returned */
+/* otherwise the number of non-terminated processes are returned (WIFEXITED or WIFSIGNALED) */
+/* a return of 0 implies that the job has terminated */
 int wait_job(JOB *job)
 {
 	int i, wstatus, w, total_running;
@@ -146,15 +147,15 @@ int wait_job(JOB *job)
 					 WUNTRACED | WNOHANG)) == -1) {
 				perror("Invalid: waitpid");
 				printf("%d", job->cpids[i]);
-				killpg(job->pgid,
-				       SIGKILL); // kill job if waiting fail
+				kill(-job->pgid,
+				       SIGKILL); /* kill job if waiting fail */
 				return CRITICAL;
 			} else if (w) {
 				if (WIFEXITED(wstatus) ||
 				    WIFSIGNALED(wstatus)) {
 					job->cpids[i] = 0;
 				} else if (WIFSTOPPED(wstatus)) {
-					// if any process is stopped, stop all processes in job
+					/* if any process is stopped, stop all processes in job */
 					stop_job(job);
 					return -1;
 				}
@@ -168,43 +169,43 @@ int wait_job(JOB *job)
 	return total_running;
 }
 
-// execute a single process
+/* execute a single process */
 pid_t exec_proc(char **argv, int procc, int i)
 {
 	pid_t pid = fork();
 	if (pid < 0) {
 		perror("Invalid: fork failed");
 		return -1;
-	} else if (pid == 0) { // child
-		//close all other file descriptors
+	} else if (pid == 0) { /* child */
+		/* close all other file descriptors */
 		close_fds(procc, i);
 
 		dup2(fds[i][0], STDIN_FILENO);
 		dup2(fds[i][1], STDOUT_FILENO);
-		//execute
+		/* execute */
 		execvp(argv[0], argv);
-		//if exec returns it has failed and the parent should kill all spawned processes
+		/* if exec returns it has failed and the parent should kill all spawned processes */
 		return -1;
-	} else { // parent
+	} else { /* parent */
 		return pid;
 	}
 }
 
 int exec_procs(PROC_LIST *proc_list)
 {
-	// PGID of all processes of the job, the first processes's PID is given to the PGID
+	/* PGID of all processes of the job, the first processes's PID is given to the PGID */
 	int procc = proc_list->procc, i, pgid = 0, total;
-	pid_t cpids[PROCMAX]; //pids of the spawned processes
+	pid_t cpids[PROCMAX]; /* pids of the spawned processes */
 	JOB *new_job;
-	
+
 	if (!proc_list || !proc_list->procc)
 		return 1;
 
-	//default values for input and output redirect
+	/* default values for input and output redirect */
 	fds[0][0] = STDIN_FILENO;
 	fds[procc - 1][1] = STDOUT_FILENO;
 
-	// open input and output redirect files
+	/* open input and output redirect files */
 	if (proc_list->input_redirect &&
 	    (fds[0][0] = open(proc_list->input_redirect, O_RDONLY, 0644)) < 0) {
 		return FILE_IO_ERR;
@@ -218,7 +219,7 @@ int exec_procs(PROC_LIST *proc_list)
 		return FILE_IO_ERR;
 	}
 
-	// open n - 1 pipes
+	/* open n - 1 pipes */
 	for (i = 0; i < procc - 1; i++) {
 		FD pipefd[2];
 		if (pipe(pipefd)) {
@@ -230,12 +231,12 @@ int exec_procs(PROC_LIST *proc_list)
 		fds[i + 1][0] = pipefd[0];
 	}
 
-	// loop through and execute all processes
+	/* loop through and execute all processes */
 	for (i = 0; i < procc; i++) {
 		if ((cpids[i] = exec_proc(proc_list->procs[i], procc, i)) ==
 		    -1) {
 			if (pgid)
-				killpg(pgid, SIGKILL);
+				kill(-pgid, SIGKILL);
 			return EXEC_ERR;
 		}
 
@@ -243,14 +244,15 @@ int exec_procs(PROC_LIST *proc_list)
 
 		if (setpgid(cpids[i], pgid)) {
 			perror("Invalid: setpgid failed");
-			killpg(pgid, SIGKILL);
+			kill(-pgid, SIGKILL);
 			return CRITICAL;
 		}
 	}
 
 	close_fds(procc, -1);
 
-	new_job = init_job(proc_list->buf, proc_list->strlen, cpids, procc, pgid);
+	new_job =
+		init_job(proc_list->buf, proc_list->strlen, cpids, procc, pgid);
 	new_job->job_id = insert_val(job_ctrl.jobs, new_job);
 	push_back(job_ctrl.created, &new_job->job_id);
 
@@ -258,7 +260,7 @@ int exec_procs(PROC_LIST *proc_list)
 		run_job(new_job);
 	} else {
 		tcsetpgrp(STDIN_FILENO, pgid);
-		fg_job = new_job; // for signal handlers in main
+		fg_job = new_job; /* for signal handlers in main */
 		total = 0;
 		while ((total = wait_job(new_job)))
 			if (total == -1)
@@ -271,8 +273,8 @@ int exec_procs(PROC_LIST *proc_list)
 	return 0;
 }
 
-// 1 if running 0 if stopped, also stops jobs if any process is detected to have stopped
-// -1 if job terminated (but not yet waited)
+/* 1 if running 0 if stopped, also stops jobs if any process is detected to have stopped */
+/* -1 if job terminated (but not yet waited) */
 int bg_job_status(JOB *job)
 {
 	int st = wait_job(job);

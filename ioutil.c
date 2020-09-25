@@ -12,7 +12,7 @@
 /* checks the arguments passed to main and parses the value of timeout */
 int check_args(int argc, const char **argv)
 {
-	int timeout = -1; //default value of -1 indicates no timeout
+	int timeout = -1; /* default value of -1 indicates no timeout */
 
 	if (argc == ARGC) {
 		timeout = atoi(argv[1]);
@@ -36,14 +36,16 @@ static void flush()
 		;
 }
 
-/** reads a line of NULL-terminated input into buf 
+/*
+ * reads a line of NULL-terminated input into buf 
  * reads at most RDLEN characters
  * returns length of read input
  * returns -1 if first char is EOF
  */
-int readln(char *buf)
+int readline(char *buf)
 {
 	int len = read(STDIN_FILENO, buf, RDLEN);
+
 	if (!len)
 		return 0;
 	if (buf[len - 1] == EOF) {
@@ -65,11 +67,11 @@ int readln(char *buf)
  */
 int tokenize_input(char *buf, char **argv)
 {
-	int tok_c = 0; //count of current token
-	char *tok = NULL; //temp token
+	int tok_c = 0; /* count of current token */
+	char *tok = NULL; /* temp token */
 	TOKENIZER *tokenizer = init_tokenizer(buf);
 	if (!tokenizer)
-		return 0; //error in creating tokenizer
+		return 0; /* error in creating tokenizer */
 
 	while (tok_c < TOKMAX && (tok = get_next_token(tokenizer)))
 		argv[tok_c++] = tok;
@@ -114,9 +116,10 @@ int is_p_int(char *s)
  */
 int parse_tokens(int tokc, char **tokens, PROC_LIST *proc_list)
 {
-	int i = 0, procc = 0; //number of processes
+	int i = 0, procc = 0; /* number of processes */
+	char **argv; /* temporary for a process */
 
-	//handle background terminating background process
+	/* handle background terminating background process */
 	if (!strcmp(tokens[tokc - 1], "&")) {
 		proc_list->is_background = 1;
 		free(tokens[tokc - 1]);
@@ -125,17 +128,17 @@ int parse_tokens(int tokc, char **tokens, PROC_LIST *proc_list)
 		proc_list->is_background = 0;
 	}
 
-	//count number of entries
+	/* count number of entries */
 	if (!strcmp(tokens[0], "|") || !strcmp(tokens[tokc - 1], "|"))
 		return 0;
 
-	//distribute the processes in the tokens into proc_list, delimited by "|"
+	/* distribute the processes in the tokens into proc_list, delimited by "|" */
 	proc_list->procs[procc++] = tokens;
 	for (i = 0; i < tokc - 1; i++)
 		if (!strcmp(tokens[i], "&"))
-			return 0; //invalid char
+			return 0; /* invalid char */
 		else if (!strcmp(tokens[i], "|")) {
-			//check for invalid consecutive characters
+			/* check for invalid consecutive characters */
 			if (!strcmp(tokens[i + 1], "|") ||
 			    !strcmp(tokens[i + 1], "<") ||
 			    !strcmp(tokens[i + 1], ">"))
@@ -143,26 +146,24 @@ int parse_tokens(int tokc, char **tokens, PROC_LIST *proc_list)
 
 			proc_list->procs[procc++] =
 				tokens + i +
-				1; // get the next process into proc_list
+				1; /* get the next process into proc_list */
 			free(tokens[i]);
 			tokens[i] =
-				NULL; // free and set to NULL the "|" tokens so that each argv in proc_list->procs is NULL-terminated
+				NULL; /* free and set to NULL the "|" tokens so that each argv in proc_list->procs is NULL-terminated */
 		}
 
 	proc_list->procc = procc;
 
-	char **argv; //temporary for a process
-
-	//check first process for invalid token
+	/* check first process for invalid token */
 	if (!strcmp(proc_list->procs[0][0], "<") ||
 	    !strcmp(proc_list->procs[0][0], ">") ||
 	    !strcmp(proc_list->procs[procc - 1][0], "<") ||
 	    !strcmp(proc_list->procs[procc - 1][0], ">"))
 		return 0;
 
-	//iterate over all processes except the first and the last and check for invalid "<", ">"
+	/* iterate over all processes except the first and the last and check for invalid "<", ">" */
 	for (i = 1; i < procc - 1; i++) {
-		argv = proc_list->procs[i]; // arguments of ith process
+		argv = proc_list->procs[i]; /* arguments of ith process */
 		while (*argv) {
 			if (!strcmp(*argv, "<") || !strcmp(*argv, ">"))
 				return 0;
@@ -170,7 +171,7 @@ int parse_tokens(int tokc, char **tokens, PROC_LIST *proc_list)
 		}
 	}
 
-	//check the first process for input redirection, also account for output redirection if procc = 1
+	/* check the first process for input redirection, also account for output redirection if procc = 1 */
 	argv = proc_list->procs[0];
 	proc_list->input_redirect = NULL;
 	proc_list->output_redirect = NULL;
@@ -178,11 +179,11 @@ int parse_tokens(int tokc, char **tokens, PROC_LIST *proc_list)
 		return 0;
 	do {
 		if (!strcmp(*argv, "<")) {
-			// if input redirect and the next character is invalid, fail
+			/* if input redirect and the next character is invalid, fail */
 			if (!*(argv + 1) || !strcmp(*(argv + 1), "<") ||
 			    !strcmp(*(argv + 1), ">"))
 				return 0;
-			//if there is already a value input_redirect, there's a duplicate "<" so quit
+			/* if there is already a value input_redirect, there's a duplicate "<" so quit */
 			if (proc_list->input_redirect)
 				return 0;
 			proc_list->input_redirect = *(argv + 1);
@@ -190,36 +191,36 @@ int parse_tokens(int tokc, char **tokens, PROC_LIST *proc_list)
 			*argv = NULL;
 		} else if (!strcmp(*argv, ">")) {
 			if (procc == 1) {
-				// if output redirect and the next character is invalid, fail
+				/* if output redirect and the next character is invalid, fail */
 				if (!*(argv + 1) || !strcmp(*(argv + 1), "<") ||
 				    !strcmp(*(argv + 1), ">"))
 					return 0;
-				//if there is already a value output_redirect, there's a duplicate ">" so quit
+				/* if there is already a value output_redirect, there's a duplicate ">" so quit */
 				if (proc_list->output_redirect)
 					return 0;
 				proc_list->output_redirect = *(argv + 1);
 				free(*argv);
 				*argv = NULL;
 			} else
-				return 0; //invalid input
+				return 0; /* invalid input */
 		}
 	} while (*++argv);
 
 	if (procc == 1)
-		return procc; //if there is only one process, parsing is complete
+		return procc; /* if there is only one process, parsing is complete */
 
-	//check the last process for (possibly duplicate) output redirection, also check for invalid input redirection
+	/* check the last process for (possibly duplicate) output redirection, also check for invalid input redirection */
 	argv = proc_list->procs[procc - 1];
 	if (!*argv)
 		return 0;
 	do {
 		if (!strcmp(*argv, "<"))
-			return 0; //invalid char
+			return 0; /* invalid char */
 		else if (!strcmp(*argv, ">")) {
-			//if there is already a value output_redirect, there's a duplicate ">" so quit
+			/* if there is already a value output_redirect, there's a duplicate ">" so quit */
 			if (proc_list->output_redirect)
 				return 0;
-			// if output redirect and the next character is invalid, fail
+			/* if output redirect and the next character is invalid, fail */
 			if (!*(argv + 1) || !strcmp(*(argv + 1), "<") ||
 			    !strcmp(*(argv + 1), ">"))
 				return 0;
@@ -240,31 +241,31 @@ INPUT_T proc_list_from_input(PROC_LIST *proc_list, int *proc_id)
 	delete_proc_list(proc_list);
 	*proc_id = -1;
 
-	// print a newline if readline is EOF
-	if ((!(proc_list->strlen = readln(buf)) && (putchar('\n'), 1)) ||
+	/* print a newline if readline is EOF */
+	if ((!(proc_list->strlen = readline(buf)) && (putchar('\n'), 1)) ||
 	    !strcmp(buf, "exit"))
 		return EXIT;
 
 	if (!strcmp(buf, "jobs"))
 		return JOBS;
 
-	// store the buf in proc_list for later transfer to the job's name
-	// store upto NULL or & if it exists
+	/* store the buf in proc_list for later transfer to the job's name */
+	/* store upto NULL or & if it exists */
 	for (i = 0; i < proc_list->strlen; i++) {
 		proc_list->buf[i] = buf[i];
 	}
 	buf[i] = 0;
 
 	if (!(proc_list->tokc = tokenize_input(buf, proc_list->tokens)))
-		return SKIP; // if no lines entered, skip execution
+		return SKIP; /* if no lines entered, skip execution */
 
 	if (proc_list->tokc == TOKMAX)
 		free(proc_list->tokens[--(
-			proc_list->tokc)]); // edge case, must not have last token
+			proc_list->tokc)]); /* edge case, must not have last token */
 	proc_list->tokens[proc_list->tokc] =
-		0; //tokens should be null terminated
+		0; /* tokens should be null terminated */
 
-	//fg and bg expect an argument of the form "fg %x" or "fg x" where x is a positive integer
+	/* fg and bg expect an argument of the form "fg %x" or "fg x" where x is a positive integer */
 
 	if (!strcmp(proc_list->tokens[0], "fg")) {
 		if (proc_list->tokc != 2)
@@ -297,7 +298,7 @@ INPUT_T proc_list_from_input(PROC_LIST *proc_list, int *proc_id)
 	}
 
 	if (!parse_tokens(proc_list->tokc, proc_list->tokens, proc_list))
-		return FAIL; //no valid process given, skip execution
+		return FAIL; /* no valid process given, skip execution */
 
 	return VJOB;
 }

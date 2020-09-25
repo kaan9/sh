@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall -std=c89 -pedantic
+CFLAGS = -Wall -std=c89 -pedantic -D_POSIX_C_SOURCE
 OFLAGS = -Wall -c
 SRCS = ioutil.c linkedlist.c tokenizer.c executil.c sh.c
 OBJS = ioutil.o linkedlist.o tokenizer.o executil.o sh.o
