@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "tokenizer.h"
+#define ISDELIM(x) (((x) == '|') || ((x) == '&') || ((x) == '<') || ((x) == '>'))
 
 /* checks the arguments passed to main and parses the value of timeout */
 int check_args(int argc, const char **argv)
@@ -49,36 +49,58 @@ int readline(char *buf)
 	if (!len)
 		return 0;
 	if (buf[len - 1] == EOF) {
-		buf[0] = 0;
+		buf[0] = '\0';
 		return 1;
 	}
 	if (buf[len - 1] != EOF && buf[len - 1] != '\n')
 		flush();
-	buf[len - 1] = 0;
+	buf[len - 1] = '\0';
 	return len;
 }
 
-/** tokenizes a null terminated string buf of tokens delimiting
+/* 
+ * finds next token in tail string and places it into *tok
+ * returns ptr to after the token
+ */
+static char *next_tok(char *tail, char **tok)
+{
+	char *head = tail;
+
+	while (isspace(*tail))
+		tail++;
+
+	if (!*tail)
+		return NULL;
+
+	if (ISDELIM(*tail)) {
+		*tok = (char *) malloc(2);
+		(*tok)[0] = *tail;
+		(*tok)[1] = '\0';
+		return tail + 1;
+	}
+
+	for (head = tail++; *tail && !ISDELIM(*tail) && !isspace(*tail); tail++)
+		;
+	*tok = (char *) malloc(tail - head + 1);
+	memcpy(*tok, head, tail - head);
+	(*tok)[tail - head] = '\0';
+	return tail;
+}
+
+/*
+ * tokenizes a null terminated string buf of tokens delimiting
  * whitespace and separating '&', '|', '<', '>' tokens
  * makes at most TOKMAX tokens and points to them with argv
  * not in-place, each string in argv is malloc'd and must be freed
- * buf must be 0-terminated
+ * buf must be NULL-terminated
  * returns number of tokens
  */
 int tokenize_input(char *buf, char **argv)
 {
-	int tok_c = 0; /* count of current token */
-	char *tok = NULL; /* temp token */
-	TOKENIZER *tokenizer = init_tokenizer(buf);
-	if (!tokenizer)
-		return 0; /* error in creating tokenizer */
-
-	while (tok_c < TOKMAX && (tok = get_next_token(tokenizer)))
-		argv[tok_c++] = tok;
-
-	free_tokenizer(tokenizer);
-
-	return tok_c;
+	int i;
+	for (i = 0; i < TOKMAX && (buf = next_tok(buf, argv + i)); i++)
+		;
+	return i;
 }
 
 /**

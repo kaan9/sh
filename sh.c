@@ -8,7 +8,6 @@ extern JOB *fg_job;
 
 void siginthandler(int signum)
 {
-	printf("sending int to fg1\n");
 	if (fg_job) {
 		printf("sending int to fg\n");
 		kill(-fg_job->pgid, SIGINT);
