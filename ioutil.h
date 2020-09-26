@@ -1,4 +1,3 @@
-/* ioutil.h   --- Utility functions for I/O --- Kaan B Erdogmus, CIS 380, kaanberk*/
 #ifndef IOUTIL_H
 #define IOUTIL_H
 
@@ -27,10 +26,10 @@ typedef struct {
 } PROC_LIST;
 
 typedef enum {
-	VJOB = 0, /* valid job to be executed */
+	VJob = 0, /* valid job to be executed */
 	EXIT = 1, /* EOF or "exit" */
 	SKIP = 2, /* no lines entered, skip execution */
-	JOBS = 3, /* requesting list of jobs */
+	JobS = 3, /* requesting list of jobs */
 	FG = 4, /* foreground */
 	BG = 5, /* background */
 	FAIL = -1 /* parsing failed */

@@ -4,7 +4,7 @@
 #include "executil.h"
 #include "ioutil.h"
 
-extern JOB *fg_job;
+extern Job *fg_job;
 
 void siginthandler(int signum)
 {
@@ -50,7 +50,7 @@ void sync_wait()
 	}
 }
 
-int main(int argc, const char **argv)
+int main(int argc, char **argv)
 {
 	int proc_id = -1; /* id of process called with fg or bg */
 	PROC_LIST proc_list; /* processes filtered from tokens, contains allocated memory */
@@ -70,7 +70,7 @@ int main(int argc, const char **argv)
 		fflush(stdout);
 
 		switch (proc_list_from_input(&proc_list, &proc_id)) {
-		case VJOB:
+		case VJob:
 			switch (exec_procs(&proc_list)) {
 			case CRITICAL:
 				free_memory(&proc_list);
@@ -91,7 +91,7 @@ int main(int argc, const char **argv)
 			exit(EXIT_SUCCESS);
 		case SKIP:
 			continue;
-		case JOBS:
+		case JobS:
 			jobs();
 			continue;
 		case FG:

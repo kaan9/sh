@@ -1,9 +1,4 @@
-/* 
- * linkedlist.c  --- linkedlist.h implementation ---  
- * Kaan B Erdogmus, Belinda Liu CIS 380, kaanberk
- */
 #include "linkedlist.h"
-
 #include "ioutil.h"
 
 DEQUE *make_empty_list(int (*deleter)(void *))

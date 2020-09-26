@@ -1,11 +1,10 @@
-/* executil.c   --- Implementation of executil.h ---  Kaan B Erdogmus, Belinda Liu,  CIS 380, kaanberk*/
 #include "executil.h"
 
 #include <errno.h>
 #include <fcntl.h>
-#include <signal.h> /* for kill */
-#include <stdio.h> /* for perror */
-#include <stdlib.h> /* for exit */
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -19,10 +18,10 @@
 /* after forking, each child should close all other FDs */
 FD fds[PROCMAX][2];
 
-/* deleter function for a JOB */
-static int JOB_deleter(void *j)
+/* deleter function for a Job */
+static int Job_deleter(void *j)
 {
-	JOB *job = (JOB *) j;
+	Job *job = (Job *) j;
 	if (job) {
 		free(job->name);
 		free(job->cpids);
@@ -33,7 +32,7 @@ static int JOB_deleter(void *j)
 
 int init_job_ctrl()
 {
-	return !((job_ctrl.jobs = make_empty_list(&JOB_deleter)) &&
+	return !((job_ctrl.jobs = make_empty_list(&Job_deleter)) &&
 		 (job_ctrl.created = make_empty_list(NULL)) &&
 		 (job_ctrl.stopped = make_empty_list(NULL)));
 }
@@ -64,10 +63,10 @@ void close_fds(int procc, int p)
 	}
 }
 
-JOB *init_job(char *name, int strlen, int *cpids, int procc, int pgid)
+Job *init_job(char *name, int strlen, int *cpids, int procc, int pgid)
 {
 	int i;
-	JOB *job = malloc(sizeof(JOB));
+	Job *job = malloc(sizeof(Job));
 
 	job->name = malloc(sizeof(char) * (strlen + 1));
 	job->cpids = malloc(sizeof(int) * procc);
@@ -81,7 +80,7 @@ JOB *init_job(char *name, int strlen, int *cpids, int procc, int pgid)
 	return job;
 }
 
-void stop_job(JOB *job)
+void stop_job(Job *job)
 {
 	kill(-job->pgid, SIGTSTP);
 	tcsetpgrp(STDIN_FILENO, getpgid(0));
@@ -89,7 +88,7 @@ void stop_job(JOB *job)
 	push_back(job_ctrl.stopped, &job->job_id);
 }
 
-int restart_job(JOB *job)
+int restart_job(Job *job)
 {
 	kill(-job->pgid, SIGCONT);
 	tcsetpgrp(STDIN_FILENO, job->pgid);
@@ -97,7 +96,7 @@ int restart_job(JOB *job)
 	return remove_val(job_ctrl.stopped, &job->job_id);
 }
 
-int run_job(JOB *job)
+int run_job(Job *job)
 {
 	kill(-job->pgid, SIGCONT);
 	tcsetpgrp(STDIN_FILENO, getpgid(0));
@@ -105,27 +104,27 @@ int run_job(JOB *job)
 	return remove_val(job_ctrl.stopped, &job->job_id);
 }
 
-void bring_job_to_fg(JOB *job)
+void bring_job_to_fg(Job *job)
 {
 	tcsetpgrp(STDIN_FILENO, job->pgid);
 	printf("\n%s\n", job->name);
 }
 
-void delete_job(JOB *job)
+void delete_job(Job *job)
 {
 	remove_val(job_ctrl.created, &job->job_id);
 	remove_val(job_ctrl.stopped, &job->job_id);
 	replace(job_ctrl.jobs, job->job_id, NULL);
-	JOB_deleter(job);
+	Job_deleter(job);
 }
 
-void finished_job(JOB *job)
+void finished_job(Job *job)
 {
 	printf("Finished: %s\n", job->name);
 	delete_job(job);
 }
 
-void killed_job(JOB *job)
+void killed_job(Job *job)
 {
 	printf("Killed: %s\n", job->name);
 	delete_job(job);
@@ -135,7 +134,7 @@ void killed_job(JOB *job)
 /* if any are stopped, the entire process is stopped and -1 is returned */
 /* otherwise the number of non-terminated processes are returned (WIFEXITED or WIFSIGNALED) */
 /* a return of 0 implies that the job has terminated */
-int wait_job(JOB *job)
+int wait_job(Job *job)
 {
 	int i, wstatus, w, total_running;
 	if (!job)
@@ -196,7 +195,7 @@ int exec_procs(PROC_LIST *proc_list)
 	/* PGID of all processes of the job, the first processes's PID is given to the PGID */
 	int procc = proc_list->procc, i, pgid = 0, total;
 	pid_t cpids[PROCMAX]; /* pids of the spawned processes */
-	JOB *new_job;
+	Job *new_job;
 
 	if (!proc_list || !proc_list->procc)
 		return 1;
@@ -275,7 +274,7 @@ int exec_procs(PROC_LIST *proc_list)
 
 /* 1 if running 0 if stopped, also stops jobs if any process is detected to have stopped */
 /* -1 if job terminated (but not yet waited) */
-int bg_job_status(JOB *job)
+int bg_job_status(Job *job)
 {
 	int st = wait_job(job);
 	if (st == 0)
@@ -285,7 +284,7 @@ int bg_job_status(JOB *job)
 	return 1;
 }
 
-static void print_job(JOB *job)
+static void print_job(Job *job)
 {
 	int status;
 	if (!job)

@@ -1,5 +1,3 @@
-/* linkedlist.h  --- Linked list abstraction ---  Kaan B Erdogmus, Belinda Liu CIS 380, kaanberk*/
-
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
 

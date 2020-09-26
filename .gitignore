@@ -1,3 +1,4 @@
 *.o
 sh
 .clang-format
+project.pdf

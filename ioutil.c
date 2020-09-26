@@ -1,4 +1,3 @@
-/* ioutil.c   --- Implementation of ioutil.h --- Kaan B Erdogmus, CIS 380, kaanberk*/
 #include "ioutil.h"
 
 #include <errno.h>
@@ -270,7 +269,7 @@ INPUT_T proc_list_from_input(PROC_LIST *proc_list, int *proc_id)
 		return EXIT;
 
 	if (!strcmp(buf, "jobs"))
-		return JOBS;
+		return JobS;
 
 	/* store the buf in proc_list for later transfer to the job's name */
 	/* store upto NULL or & if it exists */
@@ -323,7 +322,7 @@ INPUT_T proc_list_from_input(PROC_LIST *proc_list, int *proc_id)
 	if (!parse_tokens(proc_list->tokc, proc_list->tokens, proc_list))
 		return FAIL; /* no valid process given, skip execution */
 
-	return VJOB;
+	return VJob;
 }
 
 void delete_proc_list(PROC_LIST *proc_list)
